@@ -44,7 +44,7 @@
         "moment-timezone": "^0.5.48",
         "openai": "^4.97.0",
         "winston": "^3.17.0",
-        "zod": "^3.24.4"
+        "zod": "^3.25.46"
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3.3.1",
