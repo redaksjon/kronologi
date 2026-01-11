@@ -1,6 +1,6 @@
 {
     "name": "@jankhoj/mindshahn",
-    "version": "0.0.3",
+    "version": "0.0.4-dev.0",
     "description": "It does not explain. It strikes. ⚡",
     "main": "dist/main.js",
     "type": "module",
