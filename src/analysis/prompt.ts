@@ -24,7 +24,8 @@ export const isHistoryContextConfig = (config: any): config is HistoryContextCon
  * Generates the persona section for the prompt
  */
 export async function generatePersona(configPath: string): Promise<Section<Instruction>> {
-    const persona = await Parser.parseFile(join(configPath, JOB_PERSONA_PROMPT_FILE));
+    const parser = Parser.create();
+    const persona = await parser.parseFile(join(configPath, JOB_PERSONA_PROMPT_FILE));
     return persona;
 }
 
@@ -32,7 +33,8 @@ export async function generatePersona(configPath: string): Promise<Section<Instr
  * Generates the instructions section for the prompt
  */
 export async function generateInstructions(configPath: string): Promise<Section<Instruction>> {
-    const instructions = await Parser.parseFile(join(configPath, JOB_INSTRUCTIONS_PROMPT_FILE));
+    const parser = Parser.create();
+    const instructions = await parser.parseFile(join(configPath, JOB_INSTRUCTIONS_PROMPT_FILE));
     return instructions;
 }
 
@@ -88,7 +90,7 @@ export async function readHistoricalContext(contextConfig: HistoryContextConfig,
         : contextConfig.months as number || 1;
 
     // Add section header for this context directory
-    const sourceSection: Section<Context> = createSection<Context>(`${sourceConfig.name || contextConfig.from} Context`);
+    const sourceSection: Section<Context> = createSection<Context>({ title: `${sourceConfig.name || contextConfig.from} Context` });
 
     // Get historical data for the specified number of months
     for (let i = 1; i < months + 1; i++) {
@@ -111,7 +113,7 @@ export async function readHistoricalContext(contextConfig: HistoryContextConfig,
 
             // Add each file's contents
             for (const [filename, content] of Object.entries(contents)) {
-                const fileSection: Section<Context> = createSection<Context>(`${filename}`);
+                const fileSection: Section<Context> = createSection<Context>({ title: filename });
                 fileSection.add(content as string);
                 sourceSection.add(fileSection);
             }
@@ -128,7 +130,7 @@ export async function readHistoricalContext(contextConfig: HistoryContextConfig,
  */
 export async function readStaticContext(contextConfig: StaticContextConfig, mindshahnConfig: MindshahnConfig): Promise<Section<Context>> {
     const logger = getLogger();
-    const section: Section<Context> = createSection<Context>(`${contextConfig.name} Context`);
+    const section: Section<Context> = createSection<Context>({ title: `${contextConfig.name} Context` });
     const directoryPath = contextConfig.directory;
     logger.debug(`Generating ${contextConfig.name} Context from ${directoryPath} with pattern ${contextConfig.pattern}`);
     try {
@@ -137,7 +139,7 @@ export async function readStaticContext(contextConfig: StaticContextConfig, mind
 
         // Add each file's contents
         for (const [filename, content] of Object.entries(contents)) {
-            const fileSection: Section<Context> = createSection<Context>(`${filename}`);
+            const fileSection: Section<Context> = createSection<Context>({ title: filename });
             fileSection.add(content as string);
             section.add(fileSection);
         }
@@ -154,7 +156,7 @@ export async function readStaticContext(contextConfig: StaticContextConfig, mind
 export async function generateContent(config: AnalysisConfig, parameters: Parameters, mindshahnConfig: MindshahnConfig): Promise<Section<Content>> {
     const logger = getLogger();
 
-    const content = createSection<Content>('Content');
+    const content = createSection<Content>({ title: 'Content' });
 
     const year = parameters.year.value as string;
     const month = parameters.month.value as string;
@@ -173,11 +175,11 @@ export async function generateContent(config: AnalysisConfig, parameters: Parame
         logger.debug(`Generating ${value.name || key} Content from ${directoryPath} with pattern ${value.pattern}`);
 
         const contents = await readFiles(directoryPath, value.pattern);
-        const contentSection: Section<Content> = createSection<Content>(`${value.name || key} Content`);
+        const contentSection: Section<Content> = createSection<Content>({ title: `${value.name || key} Content` });
 
         // Add each file's contents to the content section
         for (const [filename, content] of Object.entries(contents)) {
-            const fileSection: Section<Content> = createSection<Content>(`${filename}`);
+            const fileSection: Section<Content> = createSection<Content>({ title: filename });
             fileSection.add(content as string);
             contentSection.add(fileSection);
             contributingFileCount++;

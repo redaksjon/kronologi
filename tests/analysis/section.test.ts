@@ -1,12 +1,12 @@
-import { jest } from '@jest/globals';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 // @ts-ignore
-const mockCreateSection = jest.fn((title) => ({
+const mockCreateSection = vi.fn((title) => ({
     title,
     items: []
 }));
 
-jest.unstable_mockModule('@riotprompt/riotprompt', () => ({
+vi.mock('@riotprompt/riotprompt', () => ({
     createSection: mockCreateSection,
 }));
 

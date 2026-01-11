@@ -32,11 +32,17 @@ export const createInputs = async (analysisName: string, params: Record<string, 
     const context: Section<Context> = await generateContext(config, parameters, mindshahnConfig);
     const content: Section<Content> = await generateContent(config, parameters, mindshahnConfig);
 
-    // Create the complete prompt
-    const prompt: Prompt = createPrompt(persona, instructions, context, content);
+    // Create the complete prompt with sections object
+    const prompt: Prompt = createPrompt({
+        persona,
+        instructions,
+        contexts: context,
+        contents: content
+    });
 
-    // Format for the model
-    const request: Request = Formatter.formatPrompt(mindshahnConfig.model as Model, prompt);
+    // Format for the model using formatter instance
+    const formatter = Formatter.create();
+    const request: Request = formatter.formatPrompt(mindshahnConfig.model as Model, prompt);
 
     return {
         config,

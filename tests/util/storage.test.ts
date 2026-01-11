@@ -1,14 +1,14 @@
-import { jest } from '@jest/globals';
+import { vi, describe, it, expect, beforeAll, beforeEach } from 'vitest';
 
 // Mock the fs module
 var fs: {
     promises: {
-        stat: jest.Mock<() => Promise<any>>,
-        access: jest.Mock<() => Promise<void>>,
-        mkdir: jest.Mock<() => Promise<void>>,
-        readFile: jest.Mock<() => Promise<string>>,
-        writeFile: jest.Mock<() => Promise<void>>,
-        lstatSync: jest.Mock<() => Promise<any>>,
+        stat: any,
+        access: any,
+        mkdir: any,
+        readFile: any,
+        writeFile: any,
+        lstatSync: any,
     },
     constants: {
         R_OK: number,
@@ -17,15 +17,15 @@ var fs: {
 };
 
 // Mock the fs module
-const mockGlob = jest.fn<() => Promise<any>>();
-const mockStat = jest.fn<() => Promise<any>>();
-const mockAccess = jest.fn<() => Promise<void>>();
-const mockMkdir = jest.fn<() => Promise<void>>();
-const mockReadFile = jest.fn<() => Promise<string>>();
-const mockWriteFile = jest.fn<() => Promise<void>>();
-const mockLstatSync = jest.fn<() => Promise<any>>();
+const mockGlob = vi.fn<() => Promise<any>>();
+const mockStat = vi.fn<() => Promise<any>>();
+const mockAccess = vi.fn<() => Promise<void>>();
+const mockMkdir = vi.fn<() => Promise<void>>();
+const mockReadFile = vi.fn<() => Promise<string>>();
+const mockWriteFile = vi.fn<() => Promise<void>>();
+const mockLstatSync = vi.fn<() => Promise<any>>();
 
-jest.unstable_mockModule('fs', () => ({
+vi.mock('fs', () => ({
     __esModule: true,
     promises: {
         stat: mockStat,
@@ -41,7 +41,7 @@ jest.unstable_mockModule('fs', () => ({
     }
 }));
 
-jest.unstable_mockModule('glob', () => ({
+vi.mock('glob', () => ({
     __esModule: true,
     glob: mockGlob
 }));
@@ -51,7 +51,7 @@ let storageModule: any;
 
 describe('Storage Utility', () => {
     // Mock for console.log
-    const mockLog = jest.fn();
+    const mockLog = vi.fn();
     let storage: any;
 
     beforeAll(async () => {
@@ -61,7 +61,7 @@ describe('Storage Utility', () => {
     });
 
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
         storage = storageModule.create({ log: mockLog });
     });
 
@@ -340,7 +340,7 @@ describe('Storage Utility', () => {
     describe('Default logger', () => {
         it('should use console.log as default logger', async () => {
             const originalConsoleLog = console.log;
-            const mockConsoleLog = jest.fn();
+            const mockConsoleLog = vi.fn();
             console.log = mockConsoleLog;
 
             try {
