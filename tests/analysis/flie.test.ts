@@ -1,19 +1,19 @@
 /**
  * Tests for file analysis module
  */
-import { jest } from '@jest/globals';
+import { vi, describe, test, expect, beforeAll, beforeEach } from 'vitest';
 import { join } from 'path';
 import type { FileContents } from '../../src/types';
 
 // Define interface types for mocks
 interface MockLogger {
-    debug: jest.Mock;
-    warn: jest.Mock;
+    debug: any;
+    warn: any;
 }
 
 interface MockStorage {
-    readFile: jest.Mock;
-    exists: jest.Mock;
+    readFile: any;
+    exists: any;
 }
 
 interface MockFileModule {
@@ -22,23 +22,23 @@ interface MockFileModule {
 }
 
 // Mock dependencies before importing the module being tested
-jest.unstable_mockModule('glob', () => ({
+vi.mock('glob', () => ({
     glob: {
-        sync: jest.fn()
+        sync: vi.fn()
     }
 }));
 
-jest.unstable_mockModule('../../src/logging', () => ({
-    getLogger: jest.fn(() => ({
-        debug: jest.fn(),
-        warn: jest.fn()
+vi.mock('../../src/logging', () => ({
+    getLogger: vi.fn(() => ({
+        debug: vi.fn(),
+        warn: vi.fn()
     }))
 }));
 
-jest.unstable_mockModule('../../src/util/storage', () => ({
-    create: jest.fn(() => ({
-        readFile: jest.fn(),
-        exists: jest.fn()
+vi.mock('../../src/util/storage', () => ({
+    create: vi.fn(() => ({
+        readFile: vi.fn(),
+        exists: vi.fn()
     }))
 }));
 
@@ -47,14 +47,14 @@ let mockConstants: { JOB_REQUIRED_FILES: string[], DEFAULT_CHARACTER_ENCODING: s
     DEFAULT_CHARACTER_ENCODING: 'utf-8'
 };
 
-jest.unstable_mockModule('../../src/constants', () => {
+vi.mock('../../src/constants', () => {
     return mockConstants;
 });
 
 // Variables to hold mocked modules
-let mockGlob: { glob: { sync: jest.Mock } };
-let mockLogger: { getLogger: jest.Mock };
-let mockStorage: { create: jest.Mock };
+let mockGlob: { glob: { sync: any } };
+let mockLogger: { getLogger: any };
+let mockStorage: { create: any };
 let fileModule: MockFileModule;
 
 // Load mocked dependencies and module under test
@@ -76,16 +76,16 @@ describe('File analysis module', () => {
     let mockLoggerInstance: MockLogger;
 
     beforeEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
 
         mockLoggerInstance = {
-            debug: jest.fn(),
-            warn: jest.fn()
+            debug: vi.fn(),
+            warn: vi.fn()
         };
 
         mockStorageInstance = {
-            readFile: jest.fn(),
-            exists: jest.fn()
+            readFile: vi.fn(),
+            exists: vi.fn()
         };
 
         // @ts-ignore
