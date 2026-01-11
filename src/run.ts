@@ -1,12 +1,12 @@
 import { OpenAI } from "openai";
 import { ChatCompletionMessageParam } from "openai/resources";
 import * as Analysis from "./analysis/inputs";
-import { JobConfig, MindshahnConfig } from "./types";
+import { JobConfig, KronologiConfig } from "./types";
 import { AnalysisConfig } from "./types";
 
 export const runModel = async (
     analysisConfig: AnalysisConfig,
-    mindshahnConfig: MindshahnConfig,
+    kronologiConfig: KronologiConfig,
     jobConfig: JobConfig,
     existingMonthlySummary?: any,
 ): Promise<{ aiSummary: string, aiUsage: any, monthlySummary: any }> => {
@@ -18,7 +18,7 @@ export const runModel = async (
         month: jobConfig.month,
         historyMonths: jobConfig.historyMonths,
         summaryMonths: jobConfig.summaryMonths
-    }, mindshahnConfig, jobConfig);
+    }, kronologiConfig, jobConfig);
 
     const response = await openai.chat.completions.create({
         model: analysisConfig.model,

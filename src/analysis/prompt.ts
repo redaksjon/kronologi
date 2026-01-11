@@ -3,7 +3,7 @@ import { join } from 'path';
 import { JOB_INSTRUCTIONS_PROMPT_FILE, JOB_PERSONA_PROMPT_FILE } from '../constants';
 import { getLogger } from '../logging';
 import { AnalysisConfig, HistoryContextConfig, Parameters, StaticContextConfig } from '../types';
-import { MindshahnConfig } from '../types';
+import { KronologiConfig } from '../types';
 import { readFiles } from './file';
 
 /**
@@ -41,7 +41,7 @@ export async function generateInstructions(configPath: string): Promise<Section<
 /**
  * Generates the context section for the prompt
  */
-export async function generateContext(config: AnalysisConfig, parameters: Parameters, mindshahnConfig: MindshahnConfig): Promise<Section<Context>> {
+export async function generateContext(config: AnalysisConfig, parameters: Parameters, mindshahnConfig: KronologiConfig): Promise<Section<Context>> {
     const logger = getLogger();
 
     const context = createSection<Context>({ title: 'Context' });
@@ -68,7 +68,7 @@ export async function generateContext(config: AnalysisConfig, parameters: Parame
 /**
  * Reads historical context for the prompt
  */
-export async function readHistoricalContext(contextConfig: HistoryContextConfig, config: AnalysisConfig, parameters: Parameters, mindshahnConfig: MindshahnConfig): Promise<Section<Context>> {
+export async function readHistoricalContext(contextConfig: HistoryContextConfig, config: AnalysisConfig, parameters: Parameters, mindshahnConfig: KronologiConfig): Promise<Section<Context>> {
     const logger = getLogger();
 
     // If this is a history context config, we need to get the configuration for the source
@@ -128,7 +128,7 @@ export async function readHistoricalContext(contextConfig: HistoryContextConfig,
 /**
  * Reads static context for the prompt
  */
-export async function readStaticContext(contextConfig: StaticContextConfig, mindshahnConfig: MindshahnConfig): Promise<Section<Context>> {
+export async function readStaticContext(contextConfig: StaticContextConfig, mindshahnConfig: KronologiConfig): Promise<Section<Context>> {
     const logger = getLogger();
     const section: Section<Context> = createSection<Context>({ title: `${contextConfig.name} Context` });
     const directoryPath = contextConfig.directory;
@@ -153,7 +153,7 @@ export async function readStaticContext(contextConfig: StaticContextConfig, mind
 /**
  * Generates the content section for the prompt
  */
-export async function generateContent(config: AnalysisConfig, parameters: Parameters, mindshahnConfig: MindshahnConfig): Promise<Section<Content>> {
+export async function generateContent(config: AnalysisConfig, parameters: Parameters, mindshahnConfig: KronologiConfig): Promise<Section<Content>> {
     const logger = getLogger();
 
     const content = createSection<Content>({ title: 'Content' });

@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { JobConfig, MindshahnConfig } from '../src/types';
+import { JobConfig, KronologiConfig } from '../src/types';
 import { AnalysisConfig } from '../src/types';
 
 // Mock dependencies before importing the module under test
@@ -43,7 +43,7 @@ describe('runModel', () => {
         // Add other required fields if any
     };
     // @ts-ignore
-    const mindshahnConfig: MindshahnConfig = { /* Mock config */ };
+    const mindshahnConfig: KronologiConfig = { /* Mock config */ };
     // @ts-ignore
     const jobConfig: JobConfig = {
         job: 'test-job',

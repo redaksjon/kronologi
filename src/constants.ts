@@ -1,7 +1,7 @@
-import { JobConfig, MindshahnConfig } from "types";
+import { JobConfig, KronologiConfig } from "@/types";
 
 export const VERSION = '__VERSION__ (__GIT_BRANCH__/__GIT_COMMIT__ __GIT_TAGS__ __GIT_COMMIT_DATE__) __SYSTEM_INFO__';
-export const PROGRAM_NAME = 'mindshahn';
+export const PROGRAM_NAME = 'kronologi';
 export const DEFAULT_CHARACTER_ENCODING = 'utf-8';
 export const DEFAULT_BINARY_TO_TEXT_ENCODING = 'base64';
 export const DEFAULT_DIFF = true;
@@ -50,7 +50,7 @@ export const DEFAULT_REPLACE = false;
 export const DEFAULT_HISTORY_MONTHS = 1;
 export const DEFAULT_SUMMARY_MONTHS = 1;
 
-export const MINDSHAHN_DEFAULTS: Partial<MindshahnConfig> = {
+export const KRONOLOGI_DEFAULTS: Partial<KronologiConfig> = {
     configDirectory: DEFAULT_CONFIG_DIR,
     dryRun: DEFAULT_DRY_RUN,
     verbose: DEFAULT_VERBOSE,

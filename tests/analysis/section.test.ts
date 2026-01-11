@@ -69,7 +69,7 @@ describe('Section Tests', () => {
             };
 
             const result = replaceParameters(section, parameters);
-            expect(result.title).toBe('Hello World');
+            expect(result.title).toEqual({ title: 'Hello World' });
         });
 
         it('should handle nested sections', () => {
@@ -98,7 +98,7 @@ describe('Section Tests', () => {
 
             // @ts-ignore - We know this is a section
             const resultNestedSection = result.items[1];
-            expect(resultNestedSection.title).toBe('Nested Section');
+            expect(resultNestedSection.title).toEqual({ title: 'Nested Section' });
             expect(resultNestedSection.items[0].text).toBe('Nested cool');
         });
 

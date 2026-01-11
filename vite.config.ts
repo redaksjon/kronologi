@@ -4,6 +4,7 @@ import replace from '@rollup/plugin-replace';
 // import { visualizer } from 'rollup-plugin-visualizer';
 import { execSync } from 'child_process';
 import shebang from 'rollup-plugin-preserve-shebang';
+import path from 'path';
 
 let gitInfo = {
     branch: '',
@@ -41,6 +42,9 @@ export default defineConfig({
             appPath: './src/main.ts',
             exportName: 'viteNodeApp',
             tsCompiler: 'swc',
+            swcOptions: {
+                sourceMaps: true,
+            },
         }),
         // visualizer({
         //     template: 'network',
@@ -83,5 +87,10 @@ export default defineConfig({
         modulePreload: false,
         minify: false,
         sourcemap: true
+    },
+    resolve: {
+        alias: {
+            '@': path.resolve(__dirname, 'src'),
+        },
     },
 }); 

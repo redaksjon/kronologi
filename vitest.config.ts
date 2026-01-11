@@ -10,8 +10,8 @@ export default defineConfig({
         coverage: {
             provider: 'v8',
             reporter: ['text', 'html', 'lcov'],
-            include: ['src/**/*'],
-            exclude: ['dist/**/*', 'node_modules/**/*'],
+            include: ['src/**/*.ts'],
+            exclude: ['dist/**/*', 'node_modules/**/*', 'tests/**/*', 'src/**/.DS_Store'],
             thresholds: {
                 lines: 44,
                 statements: 44,
@@ -22,7 +22,7 @@ export default defineConfig({
     },
     resolve: {
         alias: {
-            '@': '/src',
+            '@': new URL('./src', import.meta.url).pathname,
         },
     },
 }); 

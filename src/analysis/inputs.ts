@@ -1,6 +1,6 @@
 import { Content, Context, createPrompt, Formatter, Instruction, Model, Prompt, Request, Section } from '@riotprompt/riotprompt';
 import { join } from 'path';
-import { JobConfig, MindshahnConfig } from '../types';
+import { JobConfig, KronologiConfig } from '../types';
 import { checkDirectory } from './file';
 import { Inputs } from '../types';
 import { createConfig, createParameters } from './configLoader';
@@ -10,7 +10,7 @@ import { replaceParameters } from './section';
 /**
  * Main function that creates inputs for analysis by combining configuration, parameters, and content generation
  */
-export const createInputs = async (analysisName: string, params: Record<string, string | number>, mindshahnConfig: MindshahnConfig, jobConfig: JobConfig): Promise<Inputs> => {
+export const createInputs = async (analysisName: string, params: Record<string, string | number>, mindshahnConfig: KronologiConfig, jobConfig: JobConfig): Promise<Inputs> => {
     const configPath = join(mindshahnConfig.configDirectory, jobConfig.job);
     checkDirectory(configPath);
 

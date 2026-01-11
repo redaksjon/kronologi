@@ -4,7 +4,7 @@ import 'dotenv/config';
 import { writeOutputFile } from './output';
 import { join } from 'path';
 import { runModel } from './run';
-import { JobConfig, MindshahnConfig, MindshahnConfigSchema } from './types';
+import { JobConfig, KronologiConfig, KronologiConfigSchema } from './types';
 import * as Analysis from './analysis/inputs';
 import * as Arguments from './arguments';
 import { DEFAULT_CONFIG_DIR, DEFAULT_TIMEZONE, PROGRAM_NAME, VERSION } from './constants';
@@ -28,25 +28,26 @@ export async function main() {
     const dreadcabinet = Dreadcabinet.create(dreadcabinetOptions);
 
 
+    const partialSchema = KronologiConfigSchema.partial();
     const cardigantime: Cardigantime.Cardigantime<any> = Cardigantime.create({
         defaults: {
             configDirectory: DEFAULT_CONFIG_DIR,
         },
-        configShape: MindshahnConfigSchema.partial().shape,
+        configShape: partialSchema.shape as any,
     });
 
-    const [mindshahnConfig, jobConfig]: [MindshahnConfig, JobConfig] = await Arguments.configure(dreadcabinet, cardigantime);
+    const [kronologiConfig, jobConfig]: [KronologiConfig, JobConfig] = await Arguments.configure(dreadcabinet, cardigantime);
 
     // Set log level based on verbose flag
-    if (mindshahnConfig.verbose) {
+    if (kronologiConfig.verbose) {
         setLogLevel('verbose');
     }
-    if (mindshahnConfig.debug) {
+    if (kronologiConfig.debug) {
         setLogLevel('debug');
     }
 
     const logger = getLogger();
-    logger.debug('Mindshahn config: %j', mindshahnConfig);
+    logger.debug('Kronologi config: %j', kronologiConfig);
     logger.debug('Job config: %j', jobConfig);
 
     try {
@@ -62,17 +63,17 @@ export async function main() {
                 month: jobConfig.month,
                 historyMonths: jobConfig.historyMonths,
                 summaryMonths: jobConfig.summaryMonths
-            }, mindshahnConfig, jobConfig);
+            }, kronologiConfig, jobConfig);
 
             // Check if output file already exists
             const outputPath = join(
-                mindshahnConfig.summaryDirectory,
+                kronologiConfig.summaryDirectory,
                 jobConfig.year.toString(),
                 jobConfig.month.toString(),
                 monthlySummaryConfig.config.output.summary.pattern
             );
 
-            if (await storage.exists(outputPath) && !mindshahnConfig.replace) {
+            if (await storage.exists(outputPath) && !kronologiConfig.replace) {
                 logger.error(`Output file ${outputPath} already exists. Use --replace flag to overwrite.`);
                 process.exit(1);
             }
@@ -84,7 +85,7 @@ export async function main() {
 
             while (!success && (jobConfig.historyMonths >= 0 || jobConfig.summaryMonths >= 0)) {
                 try {
-                    result = await runModel(monthlySummaryConfig.config, mindshahnConfig, jobConfig);
+                    result = await runModel(monthlySummaryConfig.config, kronologiConfig, jobConfig);
                     // Check if the result contains a blank string
                     if (result?.aiSummary?.trim() === '') {
                         logger.info('Summary generation skipped: AI returned a blank response');
@@ -128,7 +129,7 @@ export async function main() {
 
             // Write all output files
             await writeOutputFile(
-                mindshahnConfig.summaryDirectory,
+                kronologiConfig.summaryDirectory,
                 jobConfig.year,
                 jobConfig.month,
                 monthlySummary.config.output.summary.pattern,
@@ -137,7 +138,7 @@ export async function main() {
             );
 
             await writeOutputFile(
-                mindshahnConfig.summaryDirectory,
+                kronologiConfig.summaryDirectory,
                 jobConfig.year,
                 jobConfig.month,
                 monthlySummary.config.output.completion.pattern,
@@ -146,7 +147,7 @@ export async function main() {
             );
 
             await writeOutputFile(
-                mindshahnConfig.summaryDirectory,
+                kronologiConfig.summaryDirectory,
                 jobConfig.year,
                 jobConfig.month,
                 monthlySummary.config.output.inputs.pattern,

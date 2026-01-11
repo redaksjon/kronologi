@@ -15,7 +15,7 @@ export interface Args extends Dreadcabinet.Args, Cardigantime.Args {
     replace?: boolean;
 }
 
-export const MindshahnConfigSchema = z.object({
+export const KronologiConfigSchema = z.object({
     dryRun: z.boolean(),
     verbose: z.boolean(),
     debug: z.boolean(),
@@ -35,7 +35,7 @@ export const JobConfigSchema = z.object({
     summaryMonths: z.number(),
 });
 
-export type MindshahnConfig = z.infer<typeof MindshahnConfigSchema> & Dreadcabinet.Config & Cardigantime.Config;
+export type KronologiConfig = z.infer<typeof KronologiConfigSchema> & Dreadcabinet.Config & Cardigantime.Config;
 export type JobConfig = z.infer<typeof JobConfigSchema>;
 
 export interface ContextConfig {
