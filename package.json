@@ -1,6 +1,6 @@
 {
   "name": "@redaksjon/kronologi",
-  "version": "0.0.9-dev.0",
+  "version": "0.0.9",
   "description": "Intelligent monthly summary generation from activity and context",
   "main": "dist/main.js",
   "type": "module",
