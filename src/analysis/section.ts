@@ -32,10 +32,10 @@ export const replaceParameters = <T extends Weighted>(section: Section<T>, param
         for (const [key, value] of Object.entries(parameters)) {
             title = title.replace(new RegExp(`{{parameters.${key}}}`, 'g'), value.value.toString());
         }
-        returnSection = createSection<T>(title);
+        returnSection = createSection<T>({ title });
     } else {
         // TODO: There should be a better way to create a section with no title.
-        returnSection = createSection<T>('');
+        returnSection = createSection<T>({ title: '' });
     }
 
     returnSection.items = items;

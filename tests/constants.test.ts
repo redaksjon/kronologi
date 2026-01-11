@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import {
     DATE_FORMAT_DAY,
     DATE_FORMAT_HOURS,
@@ -22,7 +23,7 @@ import {
 
 describe('constants', () => {
     it('should have correct string values', () => {
-        expect(PROGRAM_NAME).toBe('mindshahn');
+        expect(PROGRAM_NAME).toBe('kronologi');
         expect(DEFAULT_CHARACTER_ENCODING).toBe('utf-8');
         expect(DEFAULT_BINARY_TO_TEXT_ENCODING).toBe('base64');
     });

@@ -1,6 +1,6 @@
 import { Content, Context, createPrompt, Formatter, Instruction, Model, Prompt, Request, Section } from '@riotprompt/riotprompt';
 import { join } from 'path';
-import { JobConfig, MindshahnConfig } from '../types';
+import { JobConfig, KronologiConfig } from '../types';
 import { checkDirectory } from './file';
 import { Inputs } from '../types';
 import { createConfig, createParameters } from './configLoader';
@@ -10,7 +10,7 @@ import { replaceParameters } from './section';
 /**
  * Main function that creates inputs for analysis by combining configuration, parameters, and content generation
  */
-export const createInputs = async (analysisName: string, params: Record<string, string | number>, mindshahnConfig: MindshahnConfig, jobConfig: JobConfig): Promise<Inputs> => {
+export const createInputs = async (analysisName: string, params: Record<string, string | number>, mindshahnConfig: KronologiConfig, jobConfig: JobConfig): Promise<Inputs> => {
     const configPath = join(mindshahnConfig.configDirectory, jobConfig.job);
     checkDirectory(configPath);
 
@@ -32,11 +32,17 @@ export const createInputs = async (analysisName: string, params: Record<string, 
     const context: Section<Context> = await generateContext(config, parameters, mindshahnConfig);
     const content: Section<Content> = await generateContent(config, parameters, mindshahnConfig);
 
-    // Create the complete prompt
-    const prompt: Prompt = createPrompt(persona, instructions, context, content);
+    // Create the complete prompt with sections object
+    const prompt: Prompt = createPrompt({
+        persona,
+        instructions,
+        contexts: context,
+        contents: content
+    });
 
-    // Format for the model
-    const request: Request = Formatter.formatPrompt(mindshahnConfig.model as Model, prompt);
+    // Format for the model using formatter instance
+    const formatter = Formatter.create();
+    const request: Request = formatter.formatPrompt(mindshahnConfig.model as Model, prompt);
 
     return {
         config,

@@ -1,27 +1,27 @@
-import { jest } from '@jest/globals';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { Logger } from 'winston';
 
-jest.unstable_mockModule('openai', () => ({
-    OpenAI: jest.fn().mockImplementation(() => ({
+vi.mock('openai', () => ({
+    OpenAI: vi.fn().mockImplementation(() => ({
         chat: {
             completions: {
-                create: jest.fn()
+                create: vi.fn()
             }
         },
         audio: {
             transcriptions: {
-                create: jest.fn()
+                create: vi.fn()
             }
         }
     }))
 }));
 
-jest.unstable_mockModule('../../src/util/storage.js', () => ({
-    create: jest.fn()
+vi.mock('../../src/util/storage.js', () => ({
+    create: vi.fn()
 }));
 
-jest.unstable_mockModule('../../src/logging.js', () => ({
-    getLogger: jest.fn()
+vi.mock('../../src/logging.js', () => ({
+    getLogger: vi.fn()
 }));
 
 
@@ -33,8 +33,8 @@ let openAiUtils: any;
 
 describe('OpenAI utilities', () => {
     beforeEach(async () => {
-        jest.clearAllMocks();
-        jest.resetModules();
+        vi.clearAllMocks();
+        vi.resetModules();
 
         openAiUtils = await import('../../src/util/openai.js');
 
@@ -43,11 +43,11 @@ describe('OpenAI utilities', () => {
         Logging = await import('../../src/logging');
 
         mockLogger = {
-            debug: jest.fn(),
-            error: jest.fn()
+            debug: vi.fn(),
+            error: vi.fn()
         } as unknown as Logger;
 
-        (Logging.getLogger as jest.Mock).mockReturnValue(mockLogger);
+        (Logging.getLogger as any).mockReturnValue(mockLogger);
     });
 
     describe('createCompletion', () => {
@@ -59,7 +59,7 @@ describe('OpenAI utilities', () => {
                 chat: {
                     completions: {
                         // @ts-ignore
-                        create: jest.fn().mockResolvedValue(mockResponse)
+                        create: vi.fn().mockResolvedValue(mockResponse)
                     }
                 }
             }));
@@ -82,7 +82,7 @@ describe('OpenAI utilities', () => {
                 chat: {
                     completions: {
                         // @ts-ignore
-                        create: jest.fn().mockResolvedValue(mockResponse)
+                        create: vi.fn().mockResolvedValue(mockResponse)
                     }
                 }
             }));
@@ -110,7 +110,7 @@ describe('OpenAI utilities', () => {
                 chat: {
                     completions: {
                         // @ts-ignore
-                        create: jest.fn().mockResolvedValue(mockResponse)
+                        create: vi.fn().mockResolvedValue(mockResponse)
                     }
                 }
             }));
@@ -131,14 +131,14 @@ describe('OpenAI utilities', () => {
 
             storage.create.mockReturnValue({
                 // @ts-ignore
-                readStream: jest.fn().mockResolvedValue(mockStream)
+                readStream: vi.fn().mockResolvedValue(mockStream)
             });
 
             OpenAI.OpenAI.mockImplementation(() => ({
                 audio: {
                     transcriptions: {
                         // @ts-ignore
-                        create: jest.fn().mockResolvedValue(mockTranscription)
+                        create: vi.fn().mockResolvedValue(mockTranscription)
                     }
                 }
             }));
@@ -165,14 +165,14 @@ describe('OpenAI utilities', () => {
 
             storage.create.mockReturnValue({
                 // @ts-ignore
-                readStream: jest.fn().mockResolvedValue(mockStream)
+                readStream: vi.fn().mockResolvedValue(mockStream)
             });
 
             OpenAI.OpenAI.mockImplementation(() => ({
                 audio: {
                     transcriptions: {
                         // @ts-ignore
-                        create: jest.fn().mockResolvedValue(null)
+                        create: vi.fn().mockResolvedValue(null)
                     }
                 }
             }));

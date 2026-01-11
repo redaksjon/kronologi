@@ -1,12 +1,12 @@
-import { jest } from '@jest/globals';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 // @ts-ignore
-const mockCreateSection = jest.fn((title) => ({
+const mockCreateSection = vi.fn((title) => ({
     title,
     items: []
 }));
 
-jest.unstable_mockModule('@riotprompt/riotprompt', () => ({
+vi.mock('@riotprompt/riotprompt', () => ({
     createSection: mockCreateSection,
 }));
 
@@ -69,7 +69,7 @@ describe('Section Tests', () => {
             };
 
             const result = replaceParameters(section, parameters);
-            expect(result.title).toBe('Hello World');
+            expect(result.title).toEqual({ title: 'Hello World' });
         });
 
         it('should handle nested sections', () => {
@@ -98,7 +98,7 @@ describe('Section Tests', () => {
 
             // @ts-ignore - We know this is a section
             const resultNestedSection = result.items[1];
-            expect(resultNestedSection.title).toBe('Nested Section');
+            expect(resultNestedSection.title).toEqual({ title: 'Nested Section' });
             expect(resultNestedSection.items[0].text).toBe('Nested cool');
         });
 

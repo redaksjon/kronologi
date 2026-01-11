@@ -1,14 +1,14 @@
 import * as CardiganTime from '@theunwalked/cardigantime';
 import { Command } from "commander";
-import { ALLOWED_MODELS, DEFAULT_ACTIVITY_DIR, DEFAULT_CONFIG_DIR, DEFAULT_CONTEXT_DIR, DEFAULT_DEBUG, DEFAULT_DRY_RUN, DEFAULT_HISTORY_MONTHS, DEFAULT_MODEL, DEFAULT_REPLACE, DEFAULT_SUMMARY_DIR, DEFAULT_SUMMARY_MONTHS, DEFAULT_VERBOSE, PROGRAM_NAME, MINDSHAHN_DEFAULTS, VERSION } from "./constants";
+import { ALLOWED_MODELS, DEFAULT_ACTIVITY_DIR, DEFAULT_CONFIG_DIR, DEFAULT_CONTEXT_DIR, DEFAULT_DEBUG, DEFAULT_DRY_RUN, DEFAULT_HISTORY_MONTHS, DEFAULT_MODEL, DEFAULT_REPLACE, DEFAULT_SUMMARY_DIR, DEFAULT_SUMMARY_MONTHS, DEFAULT_VERBOSE, PROGRAM_NAME, KRONOLOGI_DEFAULTS, VERSION } from "./constants";
 import { ArgumentError } from "./error/ArgumentError";
 import { getLogger } from "./logging";
-import { Args, JobConfig, MindshahnConfig } from "./types";
+import { Args, JobConfig, KronologiConfig } from "./types";
 import * as Dates from "./util/dates";
 import * as Storage from "./util/storage";
 import * as DreadCabinet from "@theunwalked/dreadcabinet";
 
-export const configure = async (dreadcabinet: DreadCabinet.DreadCabinet, cardigantime: CardiganTime.Cardigantime<any>): Promise<[MindshahnConfig, JobConfig]> => {
+export const configure = async (dreadcabinet: DreadCabinet.DreadCabinet, cardigantime: CardiganTime.Cardigantime<any>): Promise<[KronologiConfig, JobConfig]> => {
     const logger = getLogger();
     let program = new Command();
 
@@ -48,12 +48,12 @@ export const configure = async (dreadcabinet: DreadCabinet.DreadCabinet, cardiga
     // Read the Raw values from the Dreadcabinet Command Line Arguments
     const dreadcabinetValues = await dreadcabinet.read(cliArgs);
 
-    const mindshahnConfig: MindshahnConfig = {
-        ...MINDSHAHN_DEFAULTS,
+    const kronologiConfig: KronologiConfig = {
+        ...KRONOLOGI_DEFAULTS,
         ...fileValues,   // Apply file values (overwrites defaults), ensure object
         ...dreadcabinetValues,              // Apply all CLI args last (highest precedence for all keys, including Dreadcabinet's)
-    } as MindshahnConfig;
-    await validateMindshahnConfig(mindshahnConfig);
+    } as KronologiConfig;
+    await validateKronologiConfig(kronologiConfig);
 
     const cliJobArguments: Partial<JobConfig> = parseJobArguments(program.args);
     const jobConfig: JobConfig = {
@@ -61,7 +61,7 @@ export const configure = async (dreadcabinet: DreadCabinet.DreadCabinet, cardiga
         ...fileValues.job,
     } as JobConfig;
 
-    return [mindshahnConfig, jobConfig];
+    return [kronologiConfig, jobConfig];
 }
 
 function parseJobArguments(args: string[]): Partial<JobConfig> {
@@ -115,8 +115,8 @@ function parseJobArguments(args: string[]): Partial<JobConfig> {
     return jobConfig;
 }
 
-async function validateMindshahnConfig(
-    config: MindshahnConfig
+async function validateKronologiConfig(
+    config: KronologiConfig
 ): Promise<void> {
 
     validateTimezone(config.timezone);

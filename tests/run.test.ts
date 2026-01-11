@@ -1,28 +1,28 @@
-import { jest } from '@jest/globals';
-import { JobConfig, MindshahnConfig } from '../src/types';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { JobConfig, KronologiConfig } from '../src/types';
 import { AnalysisConfig } from '../src/types';
 
 // Mock dependencies before importing the module under test
-const mockGetLogger = jest.fn().mockReturnValue({
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn(),
+const mockGetLogger = vi.fn().mockReturnValue({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
 });
-const mockCreateInputs = jest.fn();
-const mockOpenAIChatCompletionsCreate = jest.fn();
+const mockCreateInputs = vi.fn();
+const mockOpenAIChatCompletionsCreate = vi.fn();
 
-jest.unstable_mockModule('../src/logging', () => ({
+vi.mock('../src/logging', () => ({
     getLogger: mockGetLogger,
 }));
 
-jest.unstable_mockModule('../src/analysis/inputs', () => ({
+vi.mock('../src/analysis/inputs', () => ({
     createInputs: mockCreateInputs,
 }));
 
 // Mock the OpenAI class constructor and the specific method used
-jest.unstable_mockModule('openai', () => ({
-    OpenAI: jest.fn().mockImplementation(() => ({
+vi.mock('openai', () => ({
+    OpenAI: vi.fn().mockImplementation(() => ({
         chat: {
             completions: {
                 create: mockOpenAIChatCompletionsCreate,
@@ -43,7 +43,7 @@ describe('runModel', () => {
         // Add other required fields if any
     };
     // @ts-ignore
-    const mindshahnConfig: MindshahnConfig = { /* Mock config */ };
+    const mindshahnConfig: KronologiConfig = { /* Mock config */ };
     // @ts-ignore
     const jobConfig: JobConfig = {
         job: 'test-job',
@@ -56,7 +56,7 @@ describe('runModel', () => {
 
     beforeEach(() => {
         // Reset mocks before each test
-        jest.clearAllMocks();
+        vi.clearAllMocks();
         // Reset process.env if needed, or set it here
         process.env.OPENAI_API_KEY = 'test-key';
     });

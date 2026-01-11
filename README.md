@@ -1,6 +1,6 @@
-# Mindshahn
+# Kronologi
 
-Mindshahn is a powerful tool for generating intelligent release notes and change logs from Git history. It uses AI to analyze and summarize code changes, making it easier to create comprehensive and meaningful documentation for your projects.
+Kronologi is a powerful tool for generating intelligent monthly summaries from activity and context. It uses AI to analyze and synthesize information, making it easier to create comprehensive and meaningful documentation for your work.
 
 ## Features
 
@@ -14,12 +14,12 @@ Mindshahn is a powerful tool for generating intelligent release notes and change
 ## Installation
 
 ```bash
-npm install -g mindshahn
+npm install -g @redaksjon/kronologi
 ```
 
 ## Command Line Usage
 
-Mindshahn provides a rich set of command line options to customize its behavior:
+Kronologi provides a rich set of command line options to customize its behavior:
 
 ### Required Arguments
 
@@ -51,27 +51,27 @@ Mindshahn provides a rich set of command line options to customize its behavior:
 
 1. Generate a summary for January 2024:
 ```bash
-mindshahn release-notes 2024 1
+kronologi release-notes 2024 1
 ```
 
 2. Generate a summary with 3 months of history:
 ```bash
-mindshahn release-notes 2024 1 3
+kronologi release-notes 2024 1 3
 ```
 
 3. Generate a summary with custom directories:
 ```bash
-mindshahn release-notes 2024 1 --config-dir ./my-config --context-directory ./my-context
+kronologi release-notes 2024 1 --config-dir ./my-config --context-directory ./my-context
 ```
 
 4. Generate a summary with a specific timezone:
 ```bash
-mindshahn release-notes 2024 1 --timezone America/New_York
+kronologi release-notes 2024 1 --timezone America/New_York
 ```
 
 ## How It Works
 
-Mindshahn analyzes your Git history and related content using a sophisticated analysis engine that:
+Kronologi analyzes your Git history and related content using a sophisticated analysis engine that:
 
 1. Reads and processes configuration files from the specified config directory
 2. Gathers context from various sources including:
@@ -89,4 +89,4 @@ The analysis engine is highly configurable, allowing you to:
 
 ## Name Origin
 
-The name "Mindshahn" is a portmanteau combining "Summarization" and "Mjollnir" (Thor's hammer from Norse mythology). Just as Mjollnir was a powerful tool that could be wielded to great effect, Mindshahn is designed to be a powerful tool for creating meaningful summaries of your code changes and project history.
+The name "Kronologi" comes from the Norwegian word for "chronology" or "timeline", reflecting its purpose of creating temporal summaries and documentation of your work over time.
