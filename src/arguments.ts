@@ -58,7 +58,7 @@ export const configure = async (dreadcabinet: DreadCabinet.DreadCabinet, cardiga
     const cliJobArguments: Partial<JobConfig> = parseJobArguments(program.args);
     const jobConfig: JobConfig = {
         ...cliJobArguments,
-        ...fileValues.job,
+        ...(fileValues.job || {}),
     } as JobConfig;
 
     return [kronologiConfig, jobConfig];
