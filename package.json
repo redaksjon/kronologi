@@ -39,7 +39,7 @@
   "dependencies": {
     "@theunwalked/dreadcabinet": "^0.0.1",
     "@theunwalked/cardigantime": "^0.0.22",
-    "@riotprompt/riotprompt": "^0.0.1",
+    "@riotprompt/riotprompt": "^0.0.21",
     "commander": "^14.0.2",
     "dayjs": "^1.11.19",
     "dotenv": "^17.2.3",
