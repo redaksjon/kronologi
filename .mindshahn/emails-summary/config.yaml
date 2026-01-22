@@ -1,0 +1,37 @@
+model: gpt-4o
+temperature: 0.7
+maxCompletionTokens: 4096
+parameters:
+  year:
+    type: number
+    description: The year to summarize
+    required: true
+  month:
+    type: number
+    description: The month to summarize
+    required: true
+context:
+  people:
+    directory: ./people
+  projects:
+    directory: ./projects
+content:
+  emails:
+    directory: email
+    pattern: "**/*.txt"
+output:
+  summary:
+    type: summary
+    format: markdown
+    name: Emails Summary
+    pattern: "emails-summary.md"
+  completion:
+    type: completion
+    format: json
+    name: Emails Summary Completion
+    pattern: "emails-summary.completion.json"
+  inputs: 
+    type: inputs
+    format: json
+    name: Emails Summary Inputs
+    pattern: "emails-summary.inputs.json"
