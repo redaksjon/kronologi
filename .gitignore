@@ -10,3 +10,5 @@ input/
 .mindshahn/tsconfig.tsbuildinfo
 .kodrdriv*
 package-lock.json
+.kodrdriv*
+tsconfig.tsbuildinfo
