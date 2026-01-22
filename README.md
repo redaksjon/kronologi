@@ -92,3 +92,4 @@ The analysis engine is highly configurable, allowing you to:
 ## Name Origin
 
 The name "Kronologi" comes from the Norwegian word for "chronology" or "timeline", reflecting its purpose of creating temporal summaries and documentation of your work over time.
+TEST
