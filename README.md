@@ -1,5 +1,7 @@
 # Kronologi
 
+<!-- Test publish 2026-01-22 -->
+
 Kronologi is a powerful tool for generating intelligent monthly summaries from activity and context. It uses AI to analyze and synthesize information, making it easier to create comprehensive and meaningful documentation for your work.
 
 ## Features
