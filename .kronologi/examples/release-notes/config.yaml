@@ -1,0 +1,71 @@
+# Release Notes - Advanced Example
+# Demonstrates using context, history, and multiple content sources
+
+model: gpt-4o
+temperature: 0.3  # Lower temperature for more factual, consistent output
+
+parameters:
+  year:
+    type: number
+    description: Year for the release
+  month:
+    type: number
+    description: Month for the release (1-12)
+  version:
+    type: string
+    description: Version number for this release
+    required: false
+
+context:
+  # Static context: guidelines that don't change
+  guidelines:
+    type: static
+    name: Release Notes Guidelines
+    directory: global
+    pattern: 'release-guidelines.md'
+
+  # Previous summary for continuity
+  previous_release:
+    type: history
+    name: Previous Release
+    from: summary
+    months: 1
+
+content:
+  # Current month's commits
+  commits:
+    type: activity
+    name: Git Commits
+    directory: 'git'
+    pattern: 'commits-*.md'
+
+  # Changelog entries
+  changes:
+    type: activity
+    name: Changes
+    directory: 'changes'
+    pattern: '*.md'
+
+  # Bug fixes
+  fixes:
+    type: activity
+    name: Bug Fixes
+    directory: 'fixes'
+    pattern: '*.md'
+
+output:
+  summary:
+    type: summary
+    format: markdown
+    name: Release Notes
+    pattern: 'RELEASE-NOTES.md'
+
+  completion:
+    type: metadata
+    format: json
+    pattern: 'completion.json'
+
+  inputs:
+    type: metadata
+    format: json
+    pattern: 'inputs.json'

@@ -5,7 +5,9 @@
   "main": "dist/main.js",
   "type": "module",
   "bin": {
-    "kronologi": "./dist/main.js"
+    "kronologi": "./dist/main.js",
+    "kronologi-validate": "./dist/validate-job.js",
+    "kronologi-init": "./dist/init-job.js"
   },
   "repository": {
     "type": "git",

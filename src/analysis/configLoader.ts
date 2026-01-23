@@ -19,16 +19,19 @@ export const createConfig = async (jobName: string, configPath: string): Promise
 
     config.name = jobName;
 
+    // Apply defaults to the configuration
+    applyConfigDefaults(config);
+
     // Validate required config properties
     if (!config.model) {
         throw new Error(`Missing required config property in ${configPath}/config.yaml: model`);
     }
 
     // Validate each context directory has required properties
-    for (const [key, value] of Object.entries(config.context)) {
-        // Validate required name property
+    for (const [key, value] of Object.entries(config.context || {})) {
+        // Apply name default if not provided
         if (!value.name) {
-            throw new Error(`Missing required name property for context ${key} in ${configPath}/config.yaml`);
+            value.name = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
         }
 
         // Validate based on context type
@@ -73,7 +76,46 @@ export const createConfig = async (jobName: string, configPath: string): Promise
         }
     }
 
+    // Apply defaults to content configurations
+    for (const [key, value] of Object.entries(config.content || {})) {
+        if (!value.name) {
+            // Generate a nice default name from the key
+            value.name = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
+        }
+        if (!value.pattern) {
+            value.pattern = '**/*.md'; // Default to all markdown files
+        }
+        if (!value.directory) {
+            value.directory = ''; // Default to root of activity directory
+        }
+    }
+
     return config;
+}
+
+/**
+ * Applies sensible defaults to configuration
+ */
+function applyConfigDefaults(config: AnalysisConfig): void {
+    // Set default temperature if not provided
+    if (config.temperature === undefined) {
+        config.temperature = 0.7;
+    }
+
+    // Set default maxCompletionTokens if not provided
+    if (config.maxCompletionTokens === undefined) {
+        config.maxCompletionTokens = 4000;
+    }
+
+    // Apply parameter defaults
+    if (config.parameters) {
+        for (const param of Object.values(config.parameters)) {
+            // If required is not explicitly set and there's no default, mark as required
+            if (param.required === undefined) {
+                param.required = param.default === undefined || param.default === null;
+            }
+        }
+    }
 }
 
 /**

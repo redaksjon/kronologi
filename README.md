@@ -2,16 +2,17 @@
 
 <!-- Test publish 2026-01-22 -->
 
-Kronologi is a powerful tool for generating intelligent monthly summaries from activity and context. It uses AI to analyze and synthesize information, making it easier to create comprehensive and meaningful documentation for your work.
+Kronologi is a powerful tool for generating intelligent reports and summaries from activity and context over customizable timeperiods. It uses AI to analyze and synthesize information, making it easier to create comprehensive and meaningful documentation for your work, whether you need monthly, weekly, or custom-period reports.
 
 ## Features
 
-- Generate intelligent release notes and change logs
+- Generate intelligent reports for any timeperiod (monthly, weekly, custom intervals)
 - Analyze Git history with customizable time periods
-- AI-powered summarization of code changes
-- Flexible configuration options
+- AI-powered summarization of activity and changes
+- Flexible configuration for different report types
 - Support for multiple output formats
-- Context-aware analysis
+- Context-aware analysis with historical continuity
+- Aggregate and summarize activity across projects and teams
 
 ## Installation
 
@@ -51,45 +52,47 @@ Kronologi provides a rich set of command line options to customize its behavior:
 
 ### Examples
 
-1. Generate a summary for January 2024:
+1. Generate a monthly release notes report for January 2024:
 ```bash
 kronologi release-notes 2024 1
 ```
 
-2. Generate a summary with 3 months of history:
+2. Generate a weekly team update with 3 weeks of historical context:
 ```bash
-kronologi release-notes 2024 1 3
+kronologi weekly-update 2024 1 3
 ```
 
-3. Generate a summary with custom directories:
+3. Generate a report with custom directories:
 ```bash
 kronologi release-notes 2024 1 --config-dir ./my-config --context-directory ./my-context
 ```
 
-4. Generate a summary with a specific timezone:
+4. Generate a quarterly report with specific timezone:
 ```bash
-kronologi release-notes 2024 1 --timezone America/New_York
+kronologi quarterly-review 2024 1 --timezone America/New_York
 ```
 
 ## How It Works
 
-Kronologi analyzes your Git history and related content using a sophisticated analysis engine that:
+Kronologi analyzes your activity and context over customizable timeperiods using a sophisticated analysis engine that:
 
-1. Reads and processes configuration files from the specified config directory
-2. Gathers context from various sources including:
-   - Static context files
-   - Historical context from previous summaries
-   - Activity files from the specified period
-3. Processes and combines this information using AI to generate meaningful summaries
-4. Outputs the results in the specified format
+1. Reads and processes job-specific configuration files
+2. Gathers content from various sources including:
+   - Static context files (guidelines, entity definitions)
+   - Historical context from previous periods and summaries
+   - Activity files from the specified timeperiod
+3. Processes and combines this information using AI to generate meaningful reports
+4. Outputs structured results in your preferred format
 
 The analysis engine is highly configurable, allowing you to:
-- Define custom parameters and their types
-- Specify which context sources to include
-- Control the temperature and token limits for AI processing
+- Define custom report types for different timeperiods (monthly, weekly, quarterly, etc.)
+- Aggregate and summarize activity from multiple sources
+- Include historical data to inform current summaries
+- Control AI processing parameters (temperature, token limits, models)
 - Customize the output format and structure
+- Reference previous summaries for continuity
 
 ## Name Origin
 
-The name "Kronologi" comes from the Norwegian word for "chronology" or "timeline", reflecting its purpose of creating temporal summaries and documentation of your work over time.
+The name "Kronologi" comes from the Norwegian word for "chronology" or "timeline", reflecting its purpose of creating temporal reports and documentation of your work over customizable timeperiods.
 TEST
