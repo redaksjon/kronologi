@@ -47,7 +47,7 @@
     "@modelcontextprotocol/sdk": "^1.25.3",
     "@riotprompt/riotprompt": "^0.0.21",
     "@theunwalked/cardigantime": "^0.0.22",
-    "@theunwalked/dreadcabinet": "^0.0.1",
+    "@theunwalked/dreadcabinet": "^0.0.15",
     "commander": "^14.0.2",
     "dayjs": "^1.11.19",
     "dotenv": "^17.2.3",
