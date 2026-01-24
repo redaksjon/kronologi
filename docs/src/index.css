@@ -451,7 +451,10 @@ section {
 }
 
 .config-example {
-    max-width: 800px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    max-width: 1100px;
     margin: 0 auto;
 }
 
@@ -658,6 +661,174 @@ section {
 }
 
 /* ========================================
+   Modes Section
+   ======================================== */
+.modes-section {
+    padding: 5rem 0;
+    background: var(--color-bg-elevated);
+}
+
+.modes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.mode-card {
+    position: relative;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    padding: 2.5rem;
+    transition: all 0.3s ease;
+}
+
+.mode-card:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-4px);
+}
+
+.mode-highlight {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(236, 72, 153, 0.05) 100%);
+    border-color: var(--color-primary);
+}
+
+.mode-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    padding: 0.25rem 0.75rem;
+    background: var(--color-primary);
+    color: #000;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 100px;
+    letter-spacing: 0.05em;
+}
+
+.mode-card h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--color-text);
+}
+
+.mode-description {
+    font-size: 1.1rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 1.5rem;
+    line-height: 1.7;
+}
+
+.mode-features {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.mode-feature {
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+    padding-left: 0.5rem;
+}
+
+.mode-code-block {
+    margin-top: 1.5rem;
+    padding: 1.25rem;
+    background: var(--color-bg-code);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+}
+
+.mode-code-block code,
+.mode-code-block pre {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--color-primary);
+    line-height: 1.6;
+}
+
+/* ========================================
+   MCP Section
+   ======================================== */
+.mcp-section {
+    padding: 5rem 0;
+    background: var(--color-bg);
+}
+
+.mcp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.mcp-card {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    padding: 2.5rem;
+}
+
+.mcp-card h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--color-text);
+}
+
+.mcp-card p {
+    font-size: 1.1rem;
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+}
+
+.mcp-example {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.mcp-message {
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.user-message {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: var(--color-text);
+}
+
+.assistant-message {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: var(--color-success);
+}
+
+.mcp-code {
+    margin-top: 1.5rem;
+    padding: 1.25rem;
+    background: var(--color-bg-code);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+.mcp-code pre {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--color-primary);
+    line-height: 1.6;
+}
+
+/* ========================================
    Responsive
    ======================================== */
 @media (max-width: 768px) {
@@ -690,6 +861,23 @@ section {
 
     .step-content {
         text-align: center;
+    }
+
+    .modes-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mcp-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mode-card,
+    .mcp-card {
+        padding: 2rem;
+    }
+
+    .config-example {
+        grid-template-columns: 1fr;
     }
 }
 

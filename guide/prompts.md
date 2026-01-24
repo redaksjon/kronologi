@@ -34,6 +34,93 @@ Kronologi constructs prompts from three components:
 └─────────────────────────────────────┘
 ```
 
+## Traditional vs Reasoning Mode
+
+### Traditional Mode
+
+In traditional mode, all content is provided upfront:
+
+```
+System: [persona.md]
+
+User:
+  [instructions.md]
+
+  ## Context
+  [All context files loaded]
+
+  ## Content to Analyze
+  [All activity files loaded]
+```
+
+The AI processes everything in a single turn.
+
+### Reasoning Mode (with Tools)
+
+In reasoning mode, AI explores content dynamically:
+
+```
+System: [persona.md]
+
+User:
+  [instructions.md]
+
+  ## Available Tools
+  You have access to:
+  - read_file: Read specific files
+  - list_files: Discover available files
+  - search_files: Search file content
+
+  ## Content Location
+  Activity files are in: activity/2026-01/
+  Previous summaries in: summary/my-job/
+
+  Use the tools to explore and gather relevant information.
+```
+
+The AI makes multiple tool calls to explore files, then generates the report.
+
+**Key Differences:**
+- **Traditional**: AI receives all content, processes in one turn
+- **Reasoning**: AI explores selectively, multiple turns, better token efficiency
+
+### Writing Prompts for Reasoning Mode
+
+When reasoning mode is enabled, update your instructions to guide tool use:
+
+```markdown
+# instructions.md for reasoning mode
+
+Analyze the activity for {{parameters.month}}/{{parameters.year}}.
+
+## Exploration Strategy
+
+1. First, use `list_files` to see what activity files are available
+2. Use `search_files` to find files containing important keywords:
+   - "feature launch"
+   - "bug fix"
+   - "performance"
+   - "breaking change"
+3. Read the most relevant files using `read_file`
+4. Look for patterns and themes across files
+
+## Output Format
+
+[Same as traditional mode]
+
+## Guidelines
+
+- Focus on files with the most significant changes
+- Read previous summaries for continuity
+- Search for specific themes rather than reading everything
+```
+
+**Benefits:**
+- AI explores intelligently
+- Better token efficiency
+- More focused analysis
+- Dynamic content discovery
+
 ## The Persona (persona.md)
 
 Defines who the AI is and how it should behave.
@@ -768,49 +855,91 @@ Each bug fix MUST include:
 
 ## Testing Your Prompts
 
-### 1. Start Simple
+### 1. Validate Configuration
+
+First, ensure your job is properly configured:
+```bash
+kronologi-validate my-job
+```
+
+### 2. Start Simple
 
 Begin with minimal instructions:
 ```markdown
 Summarize the provided activity.
 ```
 
-### 2. Run and Evaluate
+### 3. Run and Evaluate
 
 ```bash
-kronologi my-job 2026 1 --verbose
+# New format
+kronologi --job my-job --year 2026 --month 1 --verbose
+
+# With reasoning mode (if enabled)
+kronologi --job my-job --year 2026 --month 1 --verbose
+# Watch tool calls to see how AI explores files
 ```
 
-### 3. Identify Issues
+### 4. Identify Issues
 
 - Too vague?
 - Wrong tone?
 - Missing sections?
 - Too long/short?
+- Not using tools effectively? (reasoning mode)
 
-### 4. Refine Incrementally
+### 5. Refine Incrementally
 
 Add one improvement at a time:
 1. Add structure
 2. Add requirements
 3. Add examples
 4. Add constraints
-5. Test again
+5. (Reasoning mode) Add tool use guidance
+6. Test again
 
-### 5. Use Version Control
+### 6. Compare Modes
+
+If you have a large dataset, test both modes:
+
+```bash
+# Traditional mode (disable reasoning in analysis.yml)
+kronologi --job my-job --year 2026 --month 1
+
+# Reasoning mode (enable reasoning in analysis.yml)
+kronologi --job my-job --year 2026 --month 1
+
+# Compare:
+# - Token usage (in completion.json)
+# - Quality of output
+# - Relevance of included content
+```
+
+### 7. Use Version Control
 
 Track prompt evolution:
 ```bash
-git add .kronologi/jobs/my-job/
+# If keeping jobs in project directory
+git add .kronologi/context/my-job/
 git commit -m "Refined instructions: added length constraints"
+
+# Or use kronologi directory
+git add ~/.kronologi/context/my-job/
+git commit -m "Refined instructions: added tool use guidance"
 ```
 
 ## Prompt Examples
 
-See the `/examples/` directory for complete prompt examples:
-- [Release Notes](../examples/release-notes/)
-- [Sprint Review](../examples/sprint-review/)
-- [Monthly Review](../examples/monthly-review/)
+See the `~/.kronologi/examples/` directory for complete prompt examples:
+- [monthly-summary](~/.kronologi/examples/monthly-summary/)
+- [release-notes](~/.kronologi/examples/release-notes/)
+- [team-update](~/.kronologi/examples/team-update/)
+
+Or create a job from a template:
+```bash
+kronologi-init --list-templates
+kronologi-init --template monthly-summary my-job
+```
 
 ## Next Steps
 

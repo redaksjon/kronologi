@@ -6,50 +6,69 @@ Understanding and configuring Kronologi jobs for different use cases.
 
 A **job** is a complete configuration for a specific type of summary or analysis. Each job has:
 
-1. **Configuration** (`config.yaml`) - Model settings, parameters, data sources, outputs
+1. **Configuration** (`analysis.yml`) - Model settings, parameters, data sources, outputs, reasoning mode
 2. **Persona** (`persona.md`) - AI personality and expertise definition
 3. **Instructions** (`instructions.md`) - Task-specific instructions and output format
 
-Jobs are stored in `.kronologi/jobs/<job-name>/` and invoked by name:
+Jobs are stored in `~/.kronologi/context/<job-name>/` and invoked by name:
 
 ```bash
+# New format (recommended)
+kronologi --job <job-name> --year <year> --month <month>
+
+# Legacy format (still supported)
 kronologi <job-name> <year> <month>
 ```
 
 ## Job Structure
 
 ```
-.kronologi/jobs/release-notes/
-├── config.yaml        # Job configuration
+~/.kronologi/context/release-notes/
+├── analysis.yml       # Job configuration (NEW)
 ├── persona.md         # AI persona definition
 └── instructions.md    # Task instructions
 ```
 
-### config.yaml
+### analysis.yml
 
 Defines behavior and data sources:
 
 ```yaml
+# Basic configuration
 model: gpt-4o
 temperature: 0.7
 maxCompletionTokens: 4000
 
+# Optional: Reasoning mode (NEW)
+reasoning:
+  enabled: true
+  provider: anthropic
+  maxIterations: 10
+  tools:
+    - read_file
+    - list_files
+    - search_files
+
+# Parameters
 parameters:
   year: { type: number, required: true }
   month: { type: number, required: true }
 
+# Context sections
 context:
   guidelines:
     type: static
     name: Guidelines
     directory: global
 
+# Content sections
 content:
   activity:
     type: activity
     name: Activity
     pattern: '*.md'
 
+# Output configuration
 output:
   summary:
     type: summary
@@ -117,19 +136,49 @@ Changes that require user action
 
 ## Creating a New Job
 
-### Step 1: Create Directory Structure
+### Method 1: Using kronologi-init (Recommended)
+
+The easiest way to create a new job is using the interactive command:
 
 ```bash
-mkdir -p .kronologi/jobs/my-job
-cd .kronologi/jobs/my-job
+# Interactive mode
+kronologi-init
+
+# From template
+kronologi-init --template monthly-summary my-job
+
+# List available templates
+kronologi-init --list-templates
 ```
 
-### Step 2: Create config.yaml
+**Available Templates:**
+- `monthly-summary` - Basic monthly reports
+- `release-notes` - Software release notes
+- `team-update` - Team status updates
+
+This automatically creates:
+- `~/.kronologi/context/my-job/analysis.yml`
+- `~/.kronologi/context/my-job/persona.md`
+- `~/.kronologi/context/my-job/instructions.md`
+
+### Method 2: Manual Creation
+
+If you prefer manual setup:
+
+#### Step 1: Create Directory Structure
+
+```bash
+mkdir -p ~/.kronologi/context/my-job
+cd ~/.kronologi/context/my-job
+```
+
+#### Step 2: Create analysis.yml
 
 ```yaml
-# config.yaml
+# analysis.yml
 model: gpt-4o
 temperature: 0.7
+maxCompletionTokens: 4000
 
 parameters:
   year: { type: number, required: true }
@@ -137,19 +186,18 @@ parameters:
 
 content:
   activity:
-    type: activity
     name: Monthly Activity
-    directory: ''
+    directory: 'activity'
     pattern: '*.md'
 
 output:
-  summary:
-    type: summary
+  report:
+    name: Monthly Summary
     format: markdown
     pattern: 'summary.md'
 ```
 
-### Step 3: Create persona.md
+#### Step 3: Create persona.md
 
 ```markdown
 You are an expert in [domain].
@@ -159,7 +207,7 @@ Your role is to [describe role].
 Write in a [style description] style.
 ```
 
-### Step 4: Create instructions.md
+#### Step 4: Create instructions.md
 
 ```markdown
 [Describe the task]
@@ -173,9 +221,24 @@ Write in a [style description] style.
 [List specific requirements]
 ```
 
-### Step 5: Test the Job
+#### Step 5: Validate Configuration
 
 ```bash
+kronologi-validate my-job
+```
+
+This checks for:
+- Missing required files
+- Invalid parameter references
+- Configuration errors
+
+#### Step 6: Test the Job
+
+```bash
+# New format
+kronologi --job my-job --year 2026 --month 1 --dry-run --verbose
+
+# Legacy format
 kronologi my-job 2026 1 --dry-run --verbose
 ```
 
@@ -185,8 +248,14 @@ kronologi my-job 2026 1 --dry-run --verbose
 
 **Purpose**: External-facing release documentation
 
+**Create:**
+```bash
+kronologi-init --template release-notes release-notes
+```
+
+**Configuration:**
 ```yaml
-# .kronologi/jobs/release-notes/config.yaml
+# ~/.kronologi/context/release-notes/analysis.yml
 model: gpt-4o
 temperature: 0.3  # Factual
 
@@ -228,8 +297,14 @@ Create release notes with:
 
 **Purpose**: Internal team communication
 
+**Create:**
+```bash
+kronologi-init --template team-update team-updates
+```
+
+**Configuration:**
 ```yaml
-# .kronologi/jobs/team-update/config.yaml
+# ~/.kronologi/context/team-updates/analysis.yml
 model: gpt-4o-mini
 temperature: 0.7
 
@@ -238,7 +313,7 @@ parameters:
 
 content:
   activity:
-    type: activity
+    name: Team Activity
     directory: 'teams/{{parameters.team}}'
     pattern: '*.md'
 ```
@@ -262,8 +337,14 @@ Create a team update covering:
 
 **Purpose**: Agile sprint retrospective
 
+**Create:**
+```bash
+kronologi-init sprint-review
+```
+
+**Configuration:**
 ```yaml
-# .kronologi/jobs/sprint-review/config.yaml
+# ~/.kronologi/context/sprint-review/analysis.yml
 model: gpt-4o
 
 parameters:
@@ -272,12 +353,12 @@ parameters:
 
 content:
   tasks:
-    type: activity
+    name: Sprint Tasks
     directory: 'sprints/{{parameters.sprint}}'
     pattern: 'tasks-*.md'
 
   retrospective:
-    type: activity
+    name: Retrospective Notes
     directory: 'sprints/{{parameters.sprint}}'
     pattern: 'retro.md'
 ```
@@ -303,8 +384,14 @@ Create a sprint review with:
 
 **Purpose**: Personal monthly reflection
 
+**Create:**
+```bash
+kronologi-init personal-review
+```
+
+**Configuration:**
 ```yaml
-# .kronologi/jobs/personal-review/config.yaml
+# ~/.kronologi/context/personal-review/analysis.yml
 model: gpt-4o
 temperature: 0.8  # More reflective
 
@@ -316,7 +403,7 @@ context:
 
 content:
   notes:
-    type: activity
+    name: Personal Notes
     directory: 'personal'
     pattern: '*.md'
 ```
@@ -341,8 +428,14 @@ Create a personal monthly review:
 
 **Purpose**: Generate project documentation from changes
 
+**Create:**
+```bash
+kronologi-init project-docs
+```
+
+**Configuration:**
 ```yaml
-# .kronologi/jobs/project-docs/config.yaml
+# ~/.kronologi/context/project-docs/analysis.yml
 model: gpt-4o
 temperature: 0.5
 
@@ -354,7 +447,7 @@ context:
 
 content:
   changes:
-    type: activity
+    name: Project Changes
     directory: 'changes'
     pattern: '*.md'
 ```
@@ -375,6 +468,75 @@ Update project documentation based on changes:
 - Migration guides
 ```
 
+### 6. Large Dataset Analysis (with Reasoning Mode)
+
+**Purpose**: Analyze large activity datasets efficiently
+
+**Create:**
+```bash
+kronologi-init large-analysis
+```
+
+**Configuration:**
+```yaml
+# ~/.kronologi/context/large-analysis/analysis.yml
+model: gpt-4o
+
+# Enable reasoning mode for better token efficiency
+reasoning:
+  enabled: true
+  provider: anthropic
+  maxIterations: 15
+  tools:
+    - read_file
+    - list_files
+    - search_files
+
+parameters:
+  year: { type: number, required: true }
+  month: { type: number, required: true }
+
+content:
+  activity:
+    name: All Activity
+    directory: 'activity'
+    pattern: '**/*.md'  # Hundreds of files
+
+output:
+  report:
+    name: Analysis Summary
+    format: markdown
+    pattern: 'summary.md'
+```
+
+**Why Reasoning Mode:**
+- AI explores files dynamically instead of loading all upfront
+- Searches for specific patterns and themes
+- Better token efficiency with large datasets
+- More intelligent content selection
+
+**persona.md**:
+```markdown
+You are a data analyst specializing in extracting insights from large datasets.
+Use the available tools to explore and understand the activity files efficiently.
+```
+
+**instructions.md**:
+```markdown
+Analyze the activity files to create a comprehensive summary.
+
+Use the tools available to you:
+1. First list_files to see what's available
+2. Then search_files to find relevant themes
+3. Read specific files that contain important information
+
+Create a summary covering:
+- Key trends and patterns
+- Notable events
+- Statistical insights
+- Recommendations
+```
+
 ## Advanced Job Patterns
 
 ### Multi-Source Aggregation
@@ -385,25 +547,25 @@ Combine multiple data sources:
 content:
   # Git commits
   commits:
-    type: activity
+    name: Git Activity
     directory: 'git'
     pattern: '*.md'
 
   # Code reviews
   reviews:
-    type: activity
+    name: Code Reviews
     directory: 'reviews'
     pattern: '*.md'
 
   # Issue tracker
   issues:
-    type: activity
+    name: Issue Tracker
     directory: 'issues'
     pattern: '*.md'
 
   # Team notes
   notes:
-    type: activity
+    name: Team Notes
     directory: 'notes'
     pattern: '*.md'
 ```
@@ -421,17 +583,17 @@ parameters:
 
 content:
   project_a:
-    type: activity
+    name: Project A Activity
     directory: 'projects/a'
     pattern: '**/*.md'
 
   project_b:
-    type: activity
+    name: Project B Activity
     directory: 'projects/b'
     pattern: '**/*.md'
 
   project_c:
-    type: activity
+    name: Project C Activity
     directory: 'projects/c'
     pattern: '**/*.md'
 ```
@@ -452,12 +614,14 @@ parameters:
 
 content:
   current:
-    type: activity
+    name: Current Activity
+    directory: 'activity'
     pattern: '*.md'
 
   # Conditionally included via instructions
   historical:
-    type: activity
+    name: Historical Activity
+    directory: 'activity'
     pattern: '*.md'
     months: 3
 ```
@@ -553,6 +717,13 @@ parameters:
 Via command line:
 
 ```bash
+# New format
+kronologi --job release-notes --year 2026 --month 1 \
+  --param project="MyProject" \
+  --param version="2.5.0" \
+  --param team="Backend"
+
+# Legacy format
 kronologi release-notes 2026 1 \
   --param project="MyProject" \
   --param version="2.5.0" \
@@ -561,14 +732,16 @@ kronologi release-notes 2026 1 \
 
 ### Using Parameters
 
-In config.yaml:
+In analysis.yml:
 ```yaml
 content:
   activity:
+    name: Project Activity
     directory: '{{parameters.project}}'
 
 output:
-  summary:
+  report:
+    name: Project Report
     pattern: '{{parameters.project}}-{{parameters.version}}.md'
 ```
 
@@ -586,11 +759,29 @@ Generate notes for the {{parameters.team}} team.
 
 ## Testing Jobs
 
+### Validate Configuration
+
+First, validate your job configuration:
+
+```bash
+kronologi-validate my-job
+```
+
+Checks for:
+- Missing required files
+- Invalid parameter references
+- Configuration errors
+- Unused parameters
+
 ### Dry Run
 
 Test without API calls:
 
 ```bash
+# New format
+kronologi --job my-job --year 2026 --month 1 --dry-run
+
+# Legacy format
 kronologi my-job 2026 1 --dry-run
 ```
 
@@ -605,7 +796,7 @@ Shows:
 See detailed processing:
 
 ```bash
-kronologi my-job 2026 1 --verbose
+kronologi --job my-job --year 2026 --month 1 --verbose
 ```
 
 Shows:
@@ -613,19 +804,21 @@ Shows:
 - Files being read
 - Token counts
 - API request/response
+- Tool calls (if reasoning mode enabled)
 
 ### Debug Mode
 
 Maximum detail:
 
 ```bash
-kronologi my-job 2026 1 --debug
+kronologi --job my-job --year 2026 --month 1 --debug
 ```
 
 Shows everything verbose does plus:
 - Full prompts
 - Complete API responses
 - Internal processing steps
+- Tool execution details
 
 ## Job Best Practices
 
@@ -634,11 +827,13 @@ Shows everything verbose does plus:
 One job = one purpose:
 
 ```bash
-.kronologi/jobs/
+~/.kronologi/context/
 ├── release-notes/      # External release notes only
 ├── internal-update/    # Internal communication only
 └── metrics-report/     # Metrics analysis only
 ```
+
+Create focused jobs with `kronologi-init`.
 
 ### 2. Descriptive Names
 
@@ -683,8 +878,12 @@ parameters:
 Track job configurations in Git:
 
 ```bash
-git add .kronologi/jobs/
+# If you keep jobs in your project
+git add .kronologi/context/
 git commit -m "Add sprint review job"
+
+# Or use a dedicated kronologi config repo
+git add ~/.kronologi/context/
 ```
 
 ### 6. Start Simple
@@ -692,40 +891,51 @@ git commit -m "Add sprint review job"
 Begin with minimal configuration:
 
 ```yaml
+# analysis.yml
 model: gpt-4o
 content:
   activity:
-    type: activity
+    name: Activity
+    directory: 'activity'
     pattern: '*.md'
 output:
-  summary:
-    type: summary
+  report:
+    name: Summary
     format: markdown
     pattern: 'summary.md'
 ```
 
-Add complexity as needed.
+Add complexity as needed:
+- Parameters
+- Context sources
+- Reasoning mode
+- Multiple outputs
 
 ### 7. Test Incrementally
 
-After each change:
+After each change, validate and test:
 
 ```bash
-kronologi my-job 2026 1 --dry-run --verbose
+# Validate configuration
+kronologi-validate my-job
+
+# Dry run
+kronologi --job my-job --year 2026 --month 1 --dry-run --verbose
 ```
 
 ### 8. Monitor Costs
 
-Check token usage:
+Check token usage after running:
 
 ```bash
-cat summary/2026/01/completion.json
+cat ~/.kronologi/summary/my-job/2026-01/completion.json
 ```
 
 Optimize if needed:
+- Enable reasoning mode for large datasets (better token efficiency)
 - Reduce history months
-- Use smaller model
-- Filter content more precisely
+- Use smaller model (`gpt-4o-mini`)
+- Filter content more precisely with patterns
 
 ## Job Templates
 
@@ -857,10 +1067,13 @@ output:
 Error: Job 'my-job' not found
 ```
 
-**Solution**: Ensure directory exists:
+**Solution**: Ensure directory and files exist:
 ```bash
-ls .kronologi/jobs/my-job/
-# Should show: config.yaml, persona.md, instructions.md
+ls ~/.kronologi/context/my-job/
+# Should show: analysis.yml, persona.md, instructions.md
+
+# Or validate the job
+kronologi-validate my-job
 ```
 
 ### Configuration Validation Failed
@@ -870,7 +1083,12 @@ Configuration validation failed:
   - model: Required
 ```
 
-**Solution**: Add missing required fields to `config.yaml`
+**Solution**: Run validation to see all issues:
+```bash
+kronologi-validate my-job
+```
+
+Add missing required fields to `analysis.yml`
 
 ### No Content Files Found
 
@@ -879,9 +1097,16 @@ Warning: No files matched pattern '*.md' in directory 'activity'
 ```
 
 **Solution**:
-1. Check pattern in `config.yaml`
-2. Verify files exist in expected location
+1. Check pattern in `analysis.yml`
+2. Verify files exist in expected location:
+   ```bash
+   ls ~/.kronologi/activity/2026-01/
+   ```
 3. Use `--debug` to see paths being searched
+4. Validate configuration:
+   ```bash
+   kronologi-validate my-job
+   ```
 
 ### Token Limit Exceeded
 
@@ -890,9 +1115,18 @@ Error: Token limit exceeded
 ```
 
 **Solution**:
-1. Reduce `historyMonths`: `kronologi my-job 2026 1 1`
-2. Use smaller model: `--model gpt-4o-mini`
-3. Filter content more precisely with patterns
+1. **Enable reasoning mode** for better token efficiency:
+   ```yaml
+   reasoning:
+     enabled: true
+     provider: anthropic
+   ```
+2. Reduce history months:
+   ```bash
+   kronologi --job my-job --year 2026 --month 1 --history-months 1
+   ```
+3. Use smaller model: `--model gpt-4o-mini`
+4. Filter content more precisely with patterns
 
 ## Next Steps
 

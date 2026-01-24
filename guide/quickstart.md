@@ -17,10 +17,14 @@ kronologi --version
 
 ## Prerequisites
 
-1. **OpenAI API Key**: Set environment variable
+1. **API Keys**: Set environment variables for your chosen provider
 
 ```bash
+# For OpenAI (traditional mode)
 export OPENAI_API_KEY="sk-..."
+
+# For Anthropic (reasoning mode)
+export ANTHROPIC_API_KEY="sk-ant-..."
 ```
 
 2. **Node.js**: Version 18 or higher
@@ -31,69 +35,27 @@ node --version  # Should be >= 18.0.0
 
 ## First Summary in 3 Steps
 
-### Step 1: Create Job Configuration
+### Step 1: Create Job from Template
 
-Create a job configuration directory:
+Use the interactive job creator:
 
 ```bash
-mkdir -p .kronologi/jobs/release-notes
-cd .kronologi/jobs/release-notes
+# Interactive mode
+kronologi-init
+
+# Or from a template
+kronologi-init --template monthly-summary my-first-job
+
+# List available templates
+kronologi-init --list-templates
 ```
 
-Create `config.yaml`:
-
-```yaml
-# .kronologi/jobs/release-notes/config.yaml
-model: gpt-4o
-temperature: 0.7
-maxCompletionTokens: 4000
-
-parameters:
-  year:
-    type: number
-    required: true
-  month:
-    type: number
-    required: true
-
-content:
-  activity:
-    type: activity
-    name: Monthly Activity
-    directory: ''
-    pattern: '*.md'
-
-output:
-  summary:
-    type: summary
-    format: markdown
-    name: Monthly Summary
-    pattern: 'summary.md'
+This creates:
 ```
-
-Create `persona.md`:
-
-```markdown
-You are an expert technical writer specializing in creating clear, concise release notes and documentation.
-```
-
-Create `instructions.md`:
-
-```markdown
-Generate a comprehensive monthly summary based on the provided activity data.
-
-## Output Format
-
-# Monthly Summary - {{parameters.month}}/{{parameters.year}}
-
-## Highlights
-- List key achievements and milestones
-
-## Changes
-- Detail significant changes
-
-## Statistics
-- Provide relevant metrics
+~/.kronologi/context/my-first-job/
+├── analysis.yml       # Job configuration
+├── persona.md         # AI persona
+└── instructions.md    # Task instructions
 ```
 
 ### Step 2: Add Activity Data
@@ -101,8 +63,9 @@ Generate a comprehensive monthly summary based on the provided activity data.
 Create activity files to summarize:
 
 ```bash
-mkdir -p activity
-echo "# January Activity
+mkdir -p ~/.kronologi/activity/2026-01
+cat > ~/.kronologi/activity/2026-01/january.md << 'EOF'
+# January Activity
 
 ## Week 1
 - Launched new feature X
@@ -110,16 +73,20 @@ echo "# January Activity
 
 ## Week 2
 - Improved performance
-- Updated documentation" > activity/january.md
+- Updated documentation
+EOF
 ```
 
 ### Step 3: Generate Summary
 
-Run Kronologi:
+Run Kronologi with the new command format:
 
 ```bash
-# From project root
-kronologi release-notes 2026 1
+# New format (recommended)
+kronologi --job my-first-job --year 2026 --month 1
+
+# Legacy format (still works)
+kronologi my-first-job 2026 1
 ```
 
 **Output**:
@@ -143,6 +110,69 @@ Congratulations! You've generated your first Kronologi summary. The `summary/` d
 - **summary.md** - The AI-generated summary
 - **completion.json** - API metadata (tokens used, model, etc.)
 - **inputs.json** - Analysis of what was sent to the AI
+
+## Validate Your Configuration
+
+Before generating, validate your job configuration:
+
+```bash
+kronologi-validate my-first-job
+```
+
+This checks for:
+- Missing required files
+- Invalid parameter references
+- Unused parameters
+- Configuration errors
+
+## Enable Reasoning Mode (Optional)
+
+For more intelligent reports, enable reasoning mode in your `analysis.yml`:
+
+```yaml
+# ~/.kronologi/context/my-first-job/analysis.yml
+reasoning:
+  enabled: true
+  provider: anthropic  # Requires ANTHROPIC_API_KEY
+  maxIterations: 10
+  tools:
+    - read_file
+    - list_files
+    - search_files
+```
+
+**What this does:**
+- AI explores activity files dynamically
+- Searches for specific information
+- Better token efficiency (only reads what's needed)
+- More intelligent content selection
+
+**Requirements:**
+- Anthropic API key: `export ANTHROPIC_API_KEY="sk-ant-..."`
+- Claude Sonnet or Opus model
+
+## Use with Claude Desktop (MCP)
+
+Configure Kronologi as an MCP server for Claude Desktop:
+
+1. **Add to Claude config** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "kronologi": {
+      "command": "kronologi-mcp"
+    }
+  }
+}
+```
+
+2. **Restart Claude Desktop**
+
+3. **Ask Claude**:
+   - "Generate a monthly report for my-first-job for January 2026"
+   - "List all Kronologi jobs"
+   - "Show me the report for my-first-job from January 2026"
 
 ## Next Steps
 
@@ -250,9 +280,12 @@ content:
 ```bash
 # Export git log to activity file
 git log --since="2026-01-01" --until="2026-02-01" \
-  --pretty=format:"- %s (%an)" > activity/commits-jan.md
+  --pretty=format:"- %s (%an)" > ~/.kronologi/activity/2026-01/commits-jan.md
 
-# Generate release notes
+# Generate release notes (new format)
+kronologi --job release-notes --year 2026 --month 1
+
+# Legacy format still works
 kronologi release-notes 2026 1
 ```
 
@@ -276,9 +309,19 @@ content:
 
 ## Testing Your Configuration
 
+Validate before running:
+
+```bash
+kronologi-validate my-job
+```
+
 Use `--dry-run` to test without consuming API tokens:
 
 ```bash
+# New format
+kronologi --job my-job --year 2026 --month 1 --dry-run
+
+# Legacy format
 kronologi release-notes 2026 1 --dry-run
 ```
 
@@ -289,13 +332,13 @@ This shows what would be generated without making API calls.
 Enable verbose logging to see what's happening:
 
 ```bash
-kronologi release-notes 2026 1 --verbose
+kronologi --job my-job --year 2026 --month 1 --verbose
 ```
 
 Or debug mode for even more detail:
 
 ```bash
-kronologi release-notes 2026 1 --debug
+kronologi --job my-job --year 2026 --month 1 --debug
 ```
 
 ## Replace Existing Summaries
@@ -303,7 +346,7 @@ kronologi release-notes 2026 1 --debug
 By default, Kronologi won't overwrite existing files. Use `--replace`:
 
 ```bash
-kronologi release-notes 2026 1 --replace
+kronologi --job my-job --year 2026 --month 1 --replace
 ```
 
 ## Timezone Support
@@ -311,7 +354,7 @@ kronologi release-notes 2026 1 --replace
 Specify timezone for date calculations:
 
 ```bash
-kronologi release-notes 2026 1 --timezone America/New_York
+kronologi --job my-job --year 2026 --month 1 --timezone America/New_York
 ```
 
 ## Multiple Jobs
@@ -319,18 +362,31 @@ kronologi release-notes 2026 1 --timezone America/New_York
 Create multiple job types for different purposes:
 
 ```bash
-.kronologi/jobs/
+# Create jobs from templates
+kronologi-init --template release-notes release-notes
+kronologi-init --template team-update team-updates
+kronologi-init --template monthly-summary personal-review
+```
+
+This creates:
+```
+~/.kronologi/context/
   release-notes/      # For external release notes
-  team-update/        # For internal team updates
+  team-updates/       # For internal team updates
   personal-review/    # For personal monthly reviews
 ```
 
 Run different jobs:
 
 ```bash
+# New format (recommended)
+kronologi --job release-notes --year 2026 --month 1
+kronologi --job team-updates --year 2026 --month 1
+kronologi --job personal-review --year 2026 --month 1
+
+# Legacy format (still works)
 kronologi release-notes 2026 1
-kronologi team-update 2026 1
-kronologi personal-review 2026 1
+kronologi team-updates 2026 1
 ```
 
 ## Tips for Success
@@ -387,33 +443,59 @@ git commit -m "Add Kronologi configuration"
 
 ## Common Issues
 
-### Issue: "Configuration file not found"
+### Issue: "Job not found"
 
-**Solution**: Ensure `.kronologi/jobs/<job-name>/config.yaml` exists
+**Solution**: Validate job exists and configuration is correct
 
 ```bash
-ls -la .kronologi/jobs/release-notes/
-# Should show: config.yaml, persona.md, instructions.md
+# List available jobs
+ls ~/.kronologi/context/
+
+# Validate job configuration
+kronologi-validate my-job
+```
+
+### Issue: "Configuration file not found"
+
+**Solution**: Ensure job configuration exists
+
+```bash
+ls -la ~/.kronologi/context/my-job/
+# Should show: analysis.yml, persona.md, instructions.md
 ```
 
 ### Issue: "No activity files found"
 
-**Solution**: Check your pattern in `config.yaml`
+**Solution**: Check your pattern in `analysis.yml` and verify files exist
 
+```bash
+# Check activity files
+ls ~/.kronologi/activity/2026-01/
+
+# Validate configuration
+kronologi-validate my-job
+```
+
+Configuration patterns:
 ```yaml
 content:
   activity:
-    pattern: '*.md'  # Matches files in activity/
+    pattern: '*.md'     # Matches files in activity/2026-01/
     pattern: '**/*.md'  # Matches files recursively
 ```
 
 ### Issue: "API token limit exceeded"
 
-**Solution**: Kronologi automatically retries with reduced history. Or manually reduce:
+**Solution**: Enable reasoning mode for better token efficiency, or reduce history:
 
 ```bash
-# Reduce history from 3 to 1 month
-kronologi release-notes 2026 1 1 1
+# Use reasoning mode (in analysis.yml)
+reasoning:
+  enabled: true
+  provider: anthropic
+
+# Or reduce history manually
+kronologi --job my-job --year 2026 --month 1 --history-months 1
 ```
 
 ### Issue: "Summary is too generic"
@@ -436,7 +518,7 @@ Avoid:
 
 ## Example Output
 
-After running `kronologi release-notes 2026 1`, you'll see:
+After running `kronologi --job release-notes --year 2026 --month 1`, you'll see:
 
 ```markdown
 # Monthly Summary - January 2026

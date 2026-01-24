@@ -7,46 +7,70 @@ Kronologi is an intelligent reporting tool that uses AI to analyze and synthesiz
 ### Essential Commands
 
 ```bash
-# Generate a monthly report
+# Create a new job from template
+kronologi-init --template monthly-summary my-job
+
+# Validate job configuration
+kronologi-validate my-job
+
+# Generate a monthly report (new format)
+kronologi --job monthly-summary --year 2026 --month 1
+
+# Generate with historical context
+kronologi --job my-job --year 2026 --month 1 --history-months 3
+
+# Start MCP server (for Claude Desktop integration)
+kronologi-mcp
+
+# Legacy format (still supported)
 kronologi release-notes 2026 1
 
-# Generate a weekly update with historical context
-kronologi weekly-update 2026 1 3 2
-
 # Dry run to see what would be generated
-kronologi release-notes 2026 1 --dry-run
-
-# Use specific model
-kronologi release-notes 2026 1 --model gpt-4o
-
-# Verbose logging for debugging
-kronologi release-notes 2026 1 --verbose
+kronologi --job my-job --year 2026 --month 1 --dry-run
 
 # Replace existing report
-kronologi release-notes 2026 1 --replace
+kronologi --job my-job --year 2026 --month 1 --replace
 ```
 
 ### Command Structure
+
+#### New Format (Recommended)
+
+```bash
+kronologi --job <job-name> --year <year> --month <month> [options]
+```
+
+**Required:**
+- `--job <name>`: Job name from `~/.kronologi/context/`
+- `--year <year>`: Year (1900-2100)
+- `--month <month>`: Month (1-12)
+
+**Options:**
+- `--history-months <n>`: Months of historical activity (default: from config)
+- `--summary-months <n>`: Previous reports to include (default: from config)
+- `--dry-run`: Test run without saving
+- `--verbose`: Verbose logging
+- `--debug`: Debug logging
+- `--replace`: Overwrite existing files
+
+#### Legacy Format (Still Supported)
 
 ```bash
 kronologi <job> <year> <month> [historyMonths] [summaryMonths] [options]
 ```
 
-**Arguments:**
-- `<job>`: Type of report (e.g., "release-notes", "weekly-update", "monthly-review", "quarterly-report")
-- `<year>`: Year (1900-2100)
-- `<month>`: Month (1-12) - serves as the reference point for the timeperiod
-- `[historyMonths]`: How many months of historical activity to analyze (default: 1)
-- `[summaryMonths]`: How many previous reports to include for continuity (default: 1)
+#### Additional Commands
 
-**Common Options:**
-- `--dry-run`: Test run without saving
-- `--verbose`: Verbose logging
-- `--debug`: Debug logging
-- `--timezone <tz>`: Timezone for date calculations (default: UTC)
-- `--model <model>`: OpenAI model to use
-- `--config-dir <dir>`: Configuration directory (default: `.kronologi`)
-- `--replace`: Overwrite existing files
+```bash
+# Create new job
+kronologi-init [--template <template>] [job-name]
+
+# Validate configuration
+kronologi-validate <job-name>
+
+# Start MCP server
+kronologi-mcp
+```
 
 ## Key Capabilities
 
@@ -57,23 +81,55 @@ Kronologi uses AI to:
 - Synthesize multiple data sources (activity logs, historical data, previous reports, static context)
 - Generate coherent narratives from raw technical data
 - Create various report types: release notes, change logs, weekly updates, monthly summaries, quarterly reviews
+- **NEW**: Support for reasoning mode where AI actively explores files and makes intelligent decisions
 
-### 2. Flexible Configuration
+### 2. Multiple AI Providers
+
+- **OpenAI**: GPT-4, GPT-4o, GPT-4o-mini, o1, o1-mini, o3-mini
+- **Anthropic**: Claude (Sonnet, Opus) with reasoning capabilities
+- Provider abstraction for easy addition of new AI models
+- Simple and agentic modes available
+
+### 3. Reasoning Mode (Agentic Workflows)
+
+When enabled, AI can:
+- **Explore files dynamically** instead of receiving all content upfront
+- **Search for specific information** across activity files
+- **Make intelligent decisions** about what to include
+- **Better token efficiency** by only reading what's needed
+- **Multi-turn conversations** with tool use
+
+Available tools:
+- `read_file`: Read specific activity, summary, or context files
+- `list_files`: Discover available files with pattern matching
+- `search_files`: Search file content for specific queries
+
+### 4. MCP Server Integration
+
+Full Model Context Protocol support:
+- **AI Assistant Access**: Use Kronologi directly from Claude Desktop or other MCP clients
+- **Tools**: Generate reports, list jobs, retrieve reports, query available reports
+- **Resources**: All reports exposed as `kronologi://report/{job}/{year-month}` resources
+- **Workflows**: Guided prompts for common operations
+
+### 5. Flexible Configuration
 
 - **Job-Based Configuration**: Each report type has its own configuration (weekly, monthly, quarterly, etc.)
 - **Multiple Data Sources**: Static context, activity files, historical data, previous reports
 - **Parameter Templates**: Dynamic values in prompts via `{{parameters.key}}`
 - **Customizable Timeperiods**: Define reports for any timeframe that fits your workflow
 - **Customizable Output**: Multiple output formats per job
+- **Interactive Setup**: Create jobs from templates with `kronologi-init`
+- **Validation**: Validate configurations with `kronologi-validate`
 
-### 3. Context-Aware Processing
+### 6. Context-Aware Processing
 
 - **Historical Context**: Include previous periods of activity to inform current reports
 - **Report Continuity**: Reference previous reports to maintain narrative consistency
 - **Static Context**: Project-specific knowledge, guidelines, and entity definitions
 - **Parameter System**: Pass dynamic values to prompts for flexible report generation
 
-### 4. Intelligent Error Handling
+### 7. Intelligent Error Handling
 
 - **Token Management**: Automatically reduces history when exceeding API limits
 - **Retry Logic**: Graceful handling of API failures
@@ -293,7 +349,7 @@ Input analysis for debugging:
 
 ## Model Selection
 
-Kronologi supports all OpenAI models:
+### OpenAI Models
 
 | Model | Best For | Cost |
 |-------|----------|------|
@@ -304,13 +360,84 @@ Kronologi supports all OpenAI models:
 | `o1-mini` | Reasoning on a budget | Medium |
 | `o3-mini` | Latest reasoning model | Medium |
 
+### Anthropic Models (Reasoning Mode)
+
+| Model | Best For | Cost |
+|-------|----------|------|
+| `claude-sonnet-4` | **Recommended** - Agentic workflows, tool use | Medium |
+| `claude-opus-4` | High-quality reasoning | High |
+| `claude-3-5-sonnet` | Previous generation | Medium |
+
+**Note**: Anthropic models support reasoning mode with tool use (file reading, searching, exploration).
+
+## Reasoning Mode Configuration
+
+Enable AI to actively explore files:
+
+```yaml
+# In your job's analysis.yml
+reasoning:
+  enabled: true
+  provider: anthropic  # or 'openai' (limited tool support)
+  maxIterations: 10    # Max tool use rounds
+  tools:
+    - read_file        # Read specific files
+    - list_files       # Discover available files
+    - search_files     # Search file content
+```
+
+**Benefits:**
+- Better token efficiency (only reads what's needed)
+- More intelligent content selection
+- Dynamic exploration of activity files
+- Searchable content discovery
+
 ## Environment Variables
 
 | Variable | Description |
 |----------|-------------|
-| `OPENAI_API_KEY` | OpenAI API key (required) |
-| `KRONOLOGI_CONFIG_DIR` | Override default config directory |
+| `OPENAI_API_KEY` | OpenAI API key (required for OpenAI models) |
+| `ANTHROPIC_API_KEY` | Anthropic API key (required for reasoning mode with Anthropic) |
+| `KRONOLOGI_DIR` | Override default Kronologi directory (default: `~/.kronologi`) |
 | `KRONOLOGI_TIMEZONE` | Default timezone for date calculations |
+
+## MCP Server Integration
+
+### Setup with Claude Desktop
+
+1. **Configure Claude Desktop** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "kronologi": {
+      "command": "kronologi-mcp"
+    }
+  }
+}
+```
+
+2. **Restart Claude Desktop**
+
+3. **Use Claude to generate reports**:
+   - "Generate a monthly report for project-updates for January 2026"
+   - "List all available Kronologi jobs"
+   - "Show me the report for team-updates from December 2025"
+
+### Available MCP Tools
+
+- **generate_report**: Generate a new report for any job
+- **list_jobs**: List all configured jobs
+- **get_report**: Retrieve an existing report
+- **list_reports**: Query available reports by job
+
+### Resources
+
+All generated reports are accessible as resources:
+- URI format: `kronologi://report/{job}/{year-month}`
+- Example: `kronologi://report/monthly-summary/2026-01`
+
+For complete MCP documentation, see [MCP_GUIDE.md](../MCP_GUIDE.md).
 
 ## Getting Help
 
@@ -320,6 +447,12 @@ kronologi --help
 
 # Check version
 kronologi --version
+
+# Validate job configuration
+kronologi-validate my-job
+
+# List available templates
+kronologi-init --list-templates
 ```
 
 ## Next Steps

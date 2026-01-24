@@ -16,53 +16,59 @@ Kronologi uses a hierarchical configuration system:
 ## Directory Structure
 
 ```
-.kronologi/                    # Configuration root
-├── jobs/                      # Job definitions
+~/.kronologi/                  # Configuration root (default)
+├── context/                   # Job definitions
 │   ├── release-notes/
-│   │   ├── config.yaml       # Job configuration
+│   │   ├── analysis.yml      # Job configuration
 │   │   ├── persona.md        # AI persona
 │   │   └── instructions.md   # Task instructions
 │   ├── team-update/
-│   │   ├── config.yaml
+│   │   ├── analysis.yml
 │   │   ├── persona.md
 │   │   └── instructions.md
 │   └── monthly-review/
-│       ├── config.yaml
+│       ├── analysis.yml
 │       ├── persona.md
 │       └── instructions.md
-context/                       # Static context files
-├── global/                    # Project-wide context
-│   ├── guidelines.md
-│   └── style.md
-└── projects/                  # Project-specific context
-    ├── project-a.md
-    └── project-b.md
-activity/                      # Activity files to analyze
-├── 2026-01/
-│   ├── commits.md
-│   └── changes.md
-└── 2025-12/
-    ├── commits.md
-    └── changes.md
-summary/                       # Generated summaries
-├── 2026/
-│   └── 01/
-│       ├── summary.md
-│       ├── completion.json
-│       └── inputs.json
-└── 2025/
-    └── 12/
-        ├── summary.md
-        ├── completion.json
-        └── inputs.json
+├── examples/                  # Template jobs
+│   ├── monthly-summary/
+│   ├── release-notes/
+│   └── team-update/
+├── activity/                  # Activity files to analyze
+│   ├── 2026-01/
+│   │   ├── commits.md
+│   │   └── changes.md
+│   └── 2025-12/
+│       ├── commits.md
+│       └── changes.md
+└── summary/                   # Generated summaries
+    ├── release-notes/
+    │   ├── 2026-01/
+    │   │   ├── summary.md
+    │   │   ├── completion.json
+    │   │   └── inputs.json
+    │   └── 2025-12/
+    │       ├── summary.md
+    │       ├── completion.json
+    │       └── inputs.json
+    └── team-update/
+        └── 2026-01/
+            ├── summary.md
+            ├── completion.json
+            └── inputs.json
+```
+
+**Environment Variable**:
+```bash
+export KRONOLOGI_DIR=~/.kronologi  # Override default directory
 ```
 
 ## Job Configuration File
 
-### Basic Structure
+### Basic Structure (Traditional Mode)
 
 ```yaml
-# .kronologi/jobs/<job-name>/config.yaml
+# ~/.kronologi/context/<job-name>/analysis.yml
 
 # AI Model settings
 model: gpt-4o
@@ -123,23 +129,79 @@ output:
     pattern: 'completion.json'
 ```
 
+### With Reasoning Mode (Agentic Workflows)
+
+```yaml
+# ~/.kronologi/context/<job-name>/analysis.yml
+
+# AI Model settings (base model, not used in reasoning)
+model: gpt-4o
+temperature: 0.7
+maxCompletionTokens: 4000
+
+# Reasoning mode configuration (NEW)
+reasoning:
+  enabled: true
+  provider: anthropic  # or 'openai' (limited tool support)
+  maxIterations: 10    # Max tool use rounds
+  tools:
+    - read_file        # Read specific files
+    - list_files       # Discover available files
+    - search_files     # Search file content
+
+# Parameters (passed to prompts)
+parameters:
+  year:
+    type: number
+    required: true
+  month:
+    type: number
+    required: true
+
+# Content sections (AI explores these dynamically with tools)
+content:
+  activity:
+    name: Monthly Activity
+    directory: 'activity'
+    pattern: '**/*.md'
+
+# Output configuration
+output:
+  report:
+    name: Monthly Summary
+    format: markdown
+    pattern: 'summary.md'
+```
+
+**Note**: In reasoning mode:
+- AI explores files dynamically using tools
+- Content sections define what's available, not what to load
+- Better token efficiency (only reads what's needed)
+- Requires `ANTHROPIC_API_KEY` environment variable
+
 ## Model Settings
 
 ### model (required)
 
-The OpenAI model to use for generation.
+The AI model to use for generation.
 
 ```yaml
-model: gpt-4o  # Default
+model: gpt-4o  # Default for traditional mode
 ```
 
-**Supported models**:
+**OpenAI Models**:
 - `gpt-4o` - Balanced performance (default)
 - `gpt-4o-mini` - Fast and cost-effective
 - `gpt-4` - High quality
 - `o1` - Advanced reasoning
 - `o1-mini` - Reasoning on budget
 - `o3-mini` - Latest reasoning model
+
+**Anthropic Models** (reasoning mode only):
+- `claude-sonnet-4` - Agentic workflows with tool use
+- `claude-opus-4` - Premium reasoning and analysis
+
+**Note**: When reasoning mode is enabled, the provider determines which AI is used, and the model setting is primarily for fallback/compatibility.
 
 See [Models Guide](./models.md) for detailed comparison.
 
@@ -176,6 +238,160 @@ maxCompletionTokens: 4000  # Default
 - Long documents: `16000`
 
 Note: Higher limits cost more and may take longer.
+
+## Reasoning Mode Configuration (New)
+
+### reasoning (optional)
+
+Enable agentic workflows where AI can explore files dynamically.
+
+```yaml
+reasoning:
+  enabled: true
+  provider: anthropic
+  maxIterations: 10
+  tools:
+    - read_file
+    - list_files
+    - search_files
+```
+
+### reasoning.enabled (boolean)
+
+Enable reasoning mode with tool use.
+
+```yaml
+reasoning:
+  enabled: true  # Enable agentic workflows
+```
+
+**Default**: `false` (traditional mode)
+
+**When to enable**:
+- Large activity datasets (100+ files)
+- Need intelligent content selection
+- Want better token efficiency
+- Complex pattern identification required
+
+### reasoning.provider (string)
+
+AI provider for reasoning mode.
+
+```yaml
+reasoning:
+  provider: anthropic  # Recommended
+  # provider: openai   # Limited tool support
+```
+
+**Options**:
+- `anthropic` - Full tool support, recommended (requires `ANTHROPIC_API_KEY`)
+- `openai` - Basic tool support (requires `OPENAI_API_KEY`)
+
+**Default**: `anthropic`
+
+### reasoning.maxIterations (number)
+
+Maximum number of tool use rounds.
+
+```yaml
+reasoning:
+  maxIterations: 10  # Default
+```
+
+**Guidelines**:
+- Simple tasks: `5` iterations
+- Standard reports: `10` iterations
+- Complex analysis: `20` iterations
+
+**Default**: `10`
+
+### reasoning.tools (array)
+
+Tools available to AI.
+
+```yaml
+reasoning:
+  tools:
+    - read_file     # Read specific files
+    - list_files    # Discover available files
+    - search_files  # Search file content
+```
+
+**Available Tools**:
+
+1. **read_file**
+   - Read specific files from activity, summary, or context
+   - AI specifies exact path
+   - Returns file content
+
+2. **list_files**
+   - Discover available files
+   - Supports glob patterns
+   - Returns file list with metadata
+
+3. **search_files**
+   - Search for text in files
+   - Case-insensitive matching
+   - Returns matching files and line numbers
+
+**Default**: All three tools enabled
+
+### Reasoning Mode Examples
+
+#### Example 1: Basic Reasoning Mode
+
+```yaml
+# Enable with defaults
+reasoning:
+  enabled: true
+  provider: anthropic
+```
+
+#### Example 2: Limited Tools
+
+```yaml
+# Only allow reading and listing (no search)
+reasoning:
+  enabled: true
+  provider: anthropic
+  tools:
+    - read_file
+    - list_files
+```
+
+#### Example 3: Extended Exploration
+
+```yaml
+# Allow more iterations for complex analysis
+reasoning:
+  enabled: true
+  provider: anthropic
+  maxIterations: 20
+  tools:
+    - read_file
+    - list_files
+    - search_files
+```
+
+#### Example 4: OpenAI Reasoning (Limited)
+
+```yaml
+# Use OpenAI with basic tool support
+reasoning:
+  enabled: true
+  provider: openai
+  maxIterations: 5
+```
+
+### Environment Variables for Reasoning
+
+```bash
+# Anthropic (recommended)
+export ANTHROPIC_API_KEY="sk-ant-..."
+
+# OpenAI (alternative)
+export OPENAI_API_KEY="sk-..."
+```
 
 ## Parameters
 

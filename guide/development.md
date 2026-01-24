@@ -34,13 +34,37 @@ npm test
 kronologi/
 ├── src/                    # Source code
 │   ├── main.ts            # CLI entry point
+│   ├── init-job.ts        # Job creator CLI
+│   ├── validate-job.ts    # Job validator CLI
 │   ├── kronologi.ts       # Main orchestration
 │   ├── arguments.ts       # CLI argument parsing
 │   ├── types.ts           # TypeScript types and schemas
 │   ├── constants.ts       # Constants and defaults
-│   ├── run.ts             # OpenAI API client
+│   ├── run.ts             # Reasoning client integration
 │   ├── logging.ts         # Winston logger
 │   ├── output.ts          # Output file writing
+│   ├── commands/          # CLI commands (NEW)
+│   │   ├── init.ts        # Job creation
+│   │   └── validate.ts    # Job validation
+│   ├── reasoning/         # Reasoning mode (NEW)
+│   │   ├── client.ts      # Reasoning client
+│   │   ├── provider.ts    # Provider interface
+│   │   ├── reportGenerator.ts  # Report generation
+│   │   ├── types.ts       # Reasoning types
+│   │   ├── providers/     # AI providers
+│   │   │   ├── openai.ts  # OpenAI provider
+│   │   │   └── anthropic.ts  # Anthropic provider
+│   │   └── tools/         # Reasoning tools
+│   │       ├── index.ts   # Tool registration
+│   │       ├── registry.ts  # Tool registry
+│   │       ├── types.ts   # Tool types
+│   │       ├── file.ts    # File tools
+│   │       └── search.ts  # Search tools
+│   ├── mcp/               # MCP server (NEW)
+│   │   ├── server.ts      # MCP server
+│   │   ├── tools.ts       # MCP tools
+│   │   ├── resources.ts   # Resource handlers
+│   │   └── prompts.ts     # Workflow prompts
 │   ├── analysis/          # Analysis engine
 │   │   ├── inputs.ts      # Input composition
 │   │   ├── prompt.ts      # Prompt building
@@ -57,6 +81,8 @@ kronologi/
 ├── tests/                 # Test files
 │   ├── run.test.ts
 │   ├── constants.test.ts
+│   ├── reasoning/         # Reasoning tests (NEW)
+│   │   └── tools/
 │   ├── analysis/
 │   ├── util/
 │   └── error/
@@ -217,6 +243,207 @@ open coverage/index.html
 ```
 
 Target: 80%+ coverage for critical paths.
+
+## Extending Kronologi
+
+### Adding a New AI Provider
+
+To add support for a new AI provider (e.g., Cohere, Google AI):
+
+1. **Create provider file**:
+```typescript
+// src/reasoning/providers/newprovider.ts
+import { Provider, ProviderConfig, Message, CompletionResponse } from '../types';
+
+export class NewProvider implements Provider {
+  private client: NewProviderClient;
+
+  constructor(apiKey?: string) {
+    this.client = new NewProviderClient({ apiKey });
+  }
+
+  async complete(
+    messages: Message[],
+    config: ProviderConfig
+  ): Promise<CompletionResponse> {
+    const response = await this.client.complete({
+      messages,
+      model: config.model,
+      temperature: config.temperature,
+      maxTokens: config.maxTokens,
+    });
+
+    return {
+      content: response.text,
+      usage: {
+        promptTokens: response.usage.input,
+        completionTokens: response.usage.output,
+        totalTokens: response.usage.total,
+      },
+    };
+  }
+
+  // Optional: Implement tool support
+  async executeWithTools(
+    messages: Message[],
+    tools: Tool[],
+    config: ProviderConfig
+  ): Promise<{ response: CompletionResponse; toolCalls: ToolCall[] }> {
+    // Implementation with tool support
+  }
+}
+```
+
+2. **Register provider**:
+```typescript
+// src/reasoning/client.ts
+import { NewProvider } from './providers/newprovider';
+
+function createProvider(config: ReasoningConfig): Provider {
+  switch (config.provider) {
+    case 'openai':
+      return new OpenAIProvider(config.apiKey);
+    case 'anthropic':
+      return new AnthropicProvider(config.apiKey);
+    case 'newprovider':  // Add new case
+      return new NewProvider(config.apiKey);
+    default:
+      throw new Error(`Unknown provider: ${config.provider}`);
+  }
+}
+```
+
+3. **Add tests**:
+```typescript
+// tests/reasoning/providers/newprovider.test.ts
+describe('NewProvider', () => {
+  it('should complete messages', async () => {
+    const provider = new NewProvider('test-key');
+    const response = await provider.complete([...], {...});
+    expect(response.content).toBeDefined();
+  });
+});
+```
+
+### Adding a New Reasoning Tool
+
+To add a new tool for AI to use in reasoning mode:
+
+1. **Define tool**:
+```typescript
+// src/reasoning/tools/newtool.ts
+import { z } from 'zod';
+import { Tool, ToolContext, ToolResult } from './types';
+
+export const newTool: Tool = {
+  name: 'new_tool',
+  description: 'Description of what this tool does',
+  inputSchema: z.object({
+    param1: z.string().describe('Description of param1'),
+    param2: z.number().optional().describe('Optional param2'),
+  }),
+  execute: async (input, context: ToolContext): Promise<ToolResult<OutputType>> => {
+    try {
+      // Implementation using context.storage, context.config, etc.
+      const result = await performOperation(input, context);
+
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  },
+};
+```
+
+2. **Register tool**:
+```typescript
+// src/reasoning/tools/index.ts
+import { newTool } from './newtool';
+
+export function registerTools(registry: ToolRegistry): void {
+  registry.register(readFileTool);
+  registry.register(listFilesTool);
+  registry.register(searchFilesTool);
+  registry.register(newTool);  // Add new tool
+}
+```
+
+3. **Add tests**:
+```typescript
+// tests/reasoning/tools/newtool.test.ts
+describe('newTool', () => {
+  it('should execute successfully', async () => {
+    const context = createMockToolContext();
+    const result = await newTool.execute({ param1: 'test' }, context);
+    expect(result.success).toBe(true);
+  });
+});
+```
+
+### Adding a New MCP Tool
+
+To add a new MCP tool for AI assistants to use:
+
+1. **Define tool schema**:
+```typescript
+// src/mcp/tools.ts
+export const tools = [
+  // ... existing tools ...
+  {
+    name: 'new_mcp_tool',
+    description: 'Description for AI assistants',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        param1: { type: 'string', description: 'Parameter description' },
+      },
+      required: ['param1'],
+    },
+  },
+];
+```
+
+2. **Implement handler**:
+```typescript
+// src/mcp/tools.ts
+export async function handleToolCall(
+  name: string,
+  args: Record<string, unknown>
+): Promise<unknown> {
+  switch (name) {
+    case 'generate_report':
+      return await handleGenerateReport(args);
+    case 'new_mcp_tool':  // Add new case
+      return await handleNewTool(args);
+    default:
+      throw new Error(`Unknown tool: ${name}`);
+  }
+}
+
+async function handleNewTool(args: Record<string, unknown>): Promise<unknown> {
+  // Validate args
+  const { param1 } = args;
+
+  // Perform operation
+  const result = await performOperation(param1);
+
+  return {
+    success: true,
+    data: result,
+  };
+}
+```
+
+3. **Test manually with MCP Inspector**:
+```bash
+npx @modelcontextprotocol/inspector kronologi-mcp
+```
 
 ## Code Style
 

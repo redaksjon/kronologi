@@ -72,6 +72,13 @@ export interface OutputConfig {
     pattern: string;
 }
 
+export interface ReasoningConfigType {
+    enabled: boolean;
+    provider?: 'anthropic' | 'openai';
+    maxIterations?: number;
+    tools?: string[];  // Tool names to enable
+}
+
 export interface AnalysisConfig {
     name: string;
     parameters: {
@@ -85,6 +92,7 @@ export interface AnalysisConfig {
     temperature: number;
     maxCompletionTokens: number;
     model: string;
+    reasoning?: ReasoningConfigType;  // Optional reasoning config
     context: {
         [key: string]: StaticContextConfig | HistoryContextConfig;
     };

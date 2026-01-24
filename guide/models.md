@@ -1,16 +1,31 @@
 # Model Selection Guide
 
-Choosing the right OpenAI model for your Kronologi summaries.
+Choosing the right AI model for your Kronologi summaries.
 
 ## Overview
 
-Kronologi supports all OpenAI models. The model you choose affects:
+Kronologi supports multiple AI providers: **OpenAI** and **Anthropic**. The model you choose affects:
 - **Quality**: How well the AI understands and synthesizes content
 - **Cost**: API pricing per token
 - **Speed**: How quickly summaries are generated
 - **Reasoning**: Depth of analysis and insight
+- **Tools**: Ability to use reasoning mode with file exploration
 
-## Supported Models
+## AI Providers
+
+### OpenAI (Traditional Mode)
+- Direct completion generation
+- All content provided upfront
+- Best for standard summaries
+- Supports all GPT models
+
+### Anthropic (Reasoning Mode)
+- Agentic workflows with tool use
+- AI explores files dynamically
+- Better token efficiency
+- Requires reasoning mode configuration
+
+## OpenAI Models
 
 ### GPT-4o (Recommended Default)
 
@@ -184,7 +199,117 @@ temperature: 1.0
 maxCompletionTokens: 4000
 ```
 
+## Anthropic Models (Reasoning Mode)
+
+### Claude Sonnet 4 (Recommended for Reasoning)
+
+```yaml
+model: gpt-4o  # Base model (not used in reasoning mode)
+reasoning:
+  enabled: true
+  provider: anthropic
+  maxIterations: 10
+```
+
+**Characteristics**:
+- **Agentic workflows** with tool use
+- Explores files dynamically
+- Searches for relevant content
+- Makes intelligent decisions
+- **Better token efficiency** (only reads what's needed)
+- Multi-turn conversations
+
+**Best For**:
+- Large activity datasets
+- Complex pattern identification
+- Dynamic content exploration
+- Token-efficient summaries
+- Intelligent content selection
+
+**Cost**: Medium ($3.00/$15.00 per 1M tokens input/output)
+
+**Example Use Case**:
+```yaml
+# Large monthly summary with many activity files
+reasoning:
+  enabled: true
+  provider: anthropic
+  maxIterations: 10
+  tools:
+    - read_file
+    - list_files
+    - search_files
+```
+
+**Requirements**:
+```bash
+export ANTHROPIC_API_KEY="sk-ant-..."
+```
+
+### Claude Opus 4 (Premium Reasoning)
+
+```yaml
+reasoning:
+  enabled: true
+  provider: anthropic  # Uses Claude Opus by default for complex tasks
+```
+
+**Characteristics**:
+- Highest quality reasoning
+- Best for complex analysis
+- Superior pattern recognition
+- Excellent instruction following
+
+**Best For**:
+- High-stakes documentation
+- Strategic insights
+- Complex multi-source synthesis
+- Critical business reports
+
+**Cost**: High ($15.00/$75.00 per 1M tokens input/output)
+
+## Reasoning Mode vs Traditional Mode
+
+### Traditional Mode (OpenAI)
+```yaml
+# Standard completion
+model: gpt-4o
+# AI receives all content upfront
+```
+
+**Pros:**
+- Simple configuration
+- Predictable behavior
+- Single API call
+
+**Cons:**
+- All content must fit in context
+- Less efficient with large datasets
+- No dynamic exploration
+
+### Reasoning Mode (Anthropic)
+```yaml
+# Agentic workflow
+reasoning:
+  enabled: true
+  provider: anthropic
+```
+
+**Pros:**
+- AI explores files dynamically
+- Better token efficiency
+- Intelligent content selection
+- Handles large datasets
+- Searches for specific information
+
+**Cons:**
+- More complex (multi-turn)
+- Requires Anthropic API key
+- Different pricing model
+
 ## Model Comparison
+
+### OpenAI Models
 
 | Model | Speed | Cost | Quality | Reasoning | Best Use Case |
 |-------|-------|------|---------|-----------|---------------|
@@ -194,6 +319,15 @@ maxCompletionTokens: 4000
 | o1 | Slow | High | High | Excellent | Deep analysis |
 | o1-mini | Medium | Medium | Good | Good | Moderate analysis |
 | o3-mini | Medium | Medium | Good | Good | Latest reasoning |
+
+### Anthropic Models (Reasoning Mode)
+
+| Model | Speed | Cost | Quality | Tools | Best Use Case |
+|-------|-------|------|---------|-------|---------------|
+| claude-sonnet-4 | Medium | Medium | Excellent | ✅ | **Agentic workflows** - file exploration |
+| claude-opus-4 | Slower | High | Highest | ✅ | Premium reasoning & analysis |
+
+**Note**: Anthropic models require reasoning mode configuration and support dynamic file exploration with tools.
 
 ## Choosing a Model
 
@@ -233,6 +367,19 @@ temperature: 1.0
 ```yaml
 model: gpt-4o-mini  # Cost-effective
 temperature: 0.8  # Creative
+```
+
+**Large Activity Datasets** (with reasoning mode):
+```yaml
+model: gpt-4o  # Base model (not used in reasoning)
+reasoning:
+  enabled: true
+  provider: anthropic
+  maxIterations: 10
+  tools:
+    - read_file
+    - list_files
+    - search_files
 ```
 
 ### By Budget
@@ -417,10 +564,10 @@ Reduce input tokens by limiting history:
 
 ```bash
 # ❌ Expensive: 6 months of history
-kronologi release-notes 2026 1 6 3
+kronologi --job release-notes --year 2026 --month 1 --history-months 6 --summary-months 3
 
 # ✓ Cheaper: 2 months of history
-kronologi release-notes 2026 1 2 1
+kronologi --job release-notes --year 2026 --month 1 --history-months 2 --summary-months 1
 ```
 
 ### Strategy 3: Filter Content
@@ -457,11 +604,33 @@ Use smaller model for bulk, expensive model for final:
 
 ```bash
 # Draft with mini
-kronologi draft-notes 2026 1 --model gpt-4o-mini
+kronologi --job draft-notes --year 2026 --month 1 --model gpt-4o-mini
 
 # Final with gpt-4o
-kronologi final-notes 2026 1 --model gpt-4o
+kronologi --job final-notes --year 2026 --month 1 --model gpt-4o
 ```
+
+### Strategy 6: Use Reasoning Mode
+
+For large datasets, enable reasoning mode for better token efficiency:
+
+```yaml
+# ❌ Traditional mode with all content
+model: gpt-4o
+# Sends all activity files upfront (high input cost)
+
+# ✓ Reasoning mode - AI reads only what it needs
+reasoning:
+  enabled: true
+  provider: anthropic
+  maxIterations: 10
+```
+
+**Benefits:**
+- AI reads files selectively
+- Lower input token usage
+- Better for large activity datasets
+- Intelligent content exploration
 
 ## Monitoring Costs
 
@@ -602,6 +771,10 @@ model: gpt-4o-mini  # Change this
 Override for single run:
 
 ```bash
+# New format
+kronologi --job release-notes --year 2026 --month 1 --model gpt-4
+
+# Legacy format
 kronologi release-notes 2026 1 --model gpt-4
 ```
 
@@ -611,7 +784,7 @@ Set default for all runs:
 
 ```bash
 export KRONOLOGI_MODEL="gpt-4o-mini"
-kronologi release-notes 2026 1
+kronologi --job release-notes --year 2026 --month 1
 ```
 
 ## Testing Models
@@ -622,34 +795,40 @@ Test different models on same content:
 
 ```bash
 # Test with mini
-kronologi test-job 2026 1 --model gpt-4o-mini
+kronologi --job test-job --year 2026 --month 1 --model gpt-4o-mini
 
 # Test with standard
-kronologi test-job 2026 1 --model gpt-4o --replace
+kronologi --job test-job --year 2026 --month 1 --model gpt-4o --replace
 
 # Test with premium
-kronologi test-job 2026 1 --model gpt-4 --replace
+kronologi --job test-job --year 2026 --month 1 --model gpt-4 --replace
+
+# Test with reasoning mode
+# (Configure reasoning in analysis.yml first)
+kronologi --job test-job --year 2026 --month 1 --replace
 ```
 
-Compare results in `summary/2026/01/` directory.
+Compare results in `~/.kronologi/summary/test-job/2026-01/` directory.
 
 ### A/B Testing
 
 Create duplicate jobs with different models:
 
 ```
-.kronologi/jobs/
+~/.kronologi/context/
 ├── release-notes-mini/  # gpt-4o-mini
 ├── release-notes/       # gpt-4o
-└── release-notes-pro/   # gpt-4
+├── release-notes-pro/   # gpt-4
+└── release-notes-ai/    # anthropic reasoning
 ```
 
 Run all and compare:
 
 ```bash
-kronologi release-notes-mini 2026 1
-kronologi release-notes 2026 1
-kronologi release-notes-pro 2026 1
+kronologi --job release-notes-mini --year 2026 --month 1
+kronologi --job release-notes --year 2026 --month 1
+kronologi --job release-notes-pro --year 2026 --month 1
+kronologi --job release-notes-ai --year 2026 --month 1
 ```
 
 ## Best Practices
@@ -740,17 +919,25 @@ model: gpt-4o-mini
 
 **Problem**: Input too large for model
 
-**Solution**:
+**Solution 1: Reduce history**
 ```bash
-# Reduce history
-kronologi my-job 2026 1 1 0  # Only 1 month, no previous summaries
+# New format - only 1 month, no previous summaries
+kronologi --job my-job --year 2026 --month 1 --history-months 1 --summary-months 0
+
+# Legacy format
+kronologi my-job 2026 1 1 0
 ```
 
-Or configure automatic reduction:
+**Solution 2: Enable reasoning mode**
 ```yaml
-# Kronologi auto-retries with reduced history
-# Check completion.json for actual parameters used
+# In analysis.yml - AI reads files selectively
+reasoning:
+  enabled: true
+  provider: anthropic
+  maxIterations: 10
 ```
+
+Kronologi also auto-retries with reduced history. Check `completion.json` for actual parameters used.
 
 ## Next Steps
 

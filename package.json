@@ -7,7 +7,8 @@
   "bin": {
     "kronologi": "./dist/main.js",
     "kronologi-validate": "./dist/validate-job.js",
-    "kronologi-init": "./dist/init-job.js"
+    "kronologi-init": "./dist/init-job.js",
+    "kronologi-mcp": "./dist/mcp/server.js"
   },
   "repository": {
     "type": "git",
@@ -16,6 +17,7 @@
   "scripts": {
     "build": "npm run lint && tsc --noEmit && vite build",
     "start": "dist/main.js",
+    "mcp": "node dist/mcp/server.js",
     "dev": "vite",
     "watch": "vite build --watch",
     "test": "vitest run --coverage",
@@ -39,9 +41,11 @@
     "npm": ">=9.0.0"
   },
   "dependencies": {
-    "@theunwalked/dreadcabinet": "^0.0.1",
-    "@theunwalked/cardigantime": "^0.0.22",
+    "@anthropic-ai/sdk": "^0.71.2",
+    "@modelcontextprotocol/sdk": "^1.25.3",
     "@riotprompt/riotprompt": "^0.0.21",
+    "@theunwalked/cardigantime": "^0.0.22",
+    "@theunwalked/dreadcabinet": "^0.0.1",
     "commander": "^14.0.2",
     "dayjs": "^1.11.19",
     "dotenv": "^17.2.3",
