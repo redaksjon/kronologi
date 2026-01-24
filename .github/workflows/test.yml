@@ -24,8 +24,8 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: |
-          rm -rf node_modules
-          npm install
+          rm -rf node_modules package-lock.json
+          npm install --force
       - run: npm run lint
       - run: npm run build
       - run: npm test
