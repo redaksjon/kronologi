@@ -18,6 +18,8 @@ import {
     DEFAULT_CHARACTER_ENCODING,
     DEFAULT_DRY_RUN,
     DEFAULT_VERBOSE,
+    DEFAULT_MODEL,
+    KRONOLOGI_DEFAULTS,
     PROGRAM_NAME
 } from '../src/constants.js';
 
@@ -48,5 +50,10 @@ describe('constants', () => {
     it('should have correct boolean defaults', () => {
         expect(DEFAULT_VERBOSE).toBe(false);
         expect(DEFAULT_DRY_RUN).toBe(false);
+    });
+
+    it('should include model in KRONOLOGI_DEFAULTS', () => {
+        expect(KRONOLOGI_DEFAULTS.model).toBe(DEFAULT_MODEL);
+        expect(KRONOLOGI_DEFAULTS.model).toBe('gpt-4o');
     });
 });

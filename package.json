@@ -1,19 +1,24 @@
 {
   "name": "@redaksjon/kronologi",
-  "version": "0.0.12",
+  "version": "1.0.0-dev.0",
   "description": "Intelligent monthly summary generation from activity and context",
   "main": "dist/main.js",
   "type": "module",
   "bin": {
-    "kronologi": "./dist/main.js"
+    "kronologi": "./dist/main.js",
+    "kronologi-validate": "./dist/validate-job.js",
+    "kronologi-init": "./dist/init-job.js",
+    "kronologi-mcp": "./dist/mcp/server.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/redaksjon/kronologi.git"
   },
   "scripts": {
-    "build": "npm run lint && tsc --noEmit && vite build",
+    "build": "npm run lint && tsc --noEmit && vite build && npm run postbuild",
+    "postbuild": "chmod +x dist/main.js dist/init-job.js dist/validate-job.js dist/mcp/server.js",
     "start": "dist/main.js",
+    "mcp": "node dist/mcp/server.js",
     "dev": "vite",
     "watch": "vite build --watch",
     "test": "vitest run --coverage",
@@ -37,13 +42,16 @@
     "npm": ">=9.0.0"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.2",
+    "@google/generative-ai": "^0.24.1",
+    "@modelcontextprotocol/sdk": "^1.25.3",
+    "@riotprompt/riotprompt": "^0.0.21",
+    "@theunwalked/cardigantime": "^0.0.22",
     "@theunwalked/dreadcabinet": "^0.0.1",
-    "@theunwalked/cardigantime": "^0.0.1",
-    "@riotprompt/riotprompt": "^0.0.1",
     "commander": "^14.0.2",
     "dayjs": "^1.11.19",
     "dotenv": "^17.2.3",
-    "glob": "^11.0.3",
+    "glob": "^13.0.0",
     "js-yaml": "^4.1.1",
     "luxon": "^3.7.2",
     "moment-timezone": "^0.6.0",

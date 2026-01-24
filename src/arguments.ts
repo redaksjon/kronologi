@@ -1,6 +1,6 @@
 import * as CardiganTime from '@theunwalked/cardigantime';
 import { Command } from "commander";
-import { ALLOWED_MODELS, DEFAULT_ACTIVITY_DIR, DEFAULT_CONFIG_DIR, DEFAULT_CONTEXT_DIR, DEFAULT_DEBUG, DEFAULT_DRY_RUN, DEFAULT_HISTORY_MONTHS, DEFAULT_MODEL, DEFAULT_REPLACE, DEFAULT_SUMMARY_DIR, DEFAULT_SUMMARY_MONTHS, DEFAULT_VERBOSE, PROGRAM_NAME, KRONOLOGI_DEFAULTS, VERSION } from "./constants";
+import { ALLOWED_MODELS, DEFAULT_ACTIVITY_DIR, DEFAULT_CONFIG_DIR, DEFAULT_CONTEXT_DIR, DEFAULT_DEBUG, DEFAULT_DRY_RUN, DEFAULT_HISTORY_MONTHS, DEFAULT_HISTORY_WEEKS, DEFAULT_MODEL, DEFAULT_REPLACE, DEFAULT_SUMMARY_DIR, DEFAULT_SUMMARY_MONTHS, DEFAULT_SUMMARY_WEEKS, DEFAULT_VERBOSE, PROGRAM_NAME, KRONOLOGI_DEFAULTS, JOB_DEFAULTS, VERSION } from "./constants";
 import { ArgumentError } from "./error/ArgumentError";
 import { getLogger } from "./logging";
 import { Args, JobConfig, KronologiConfig } from "./types";
@@ -17,10 +17,10 @@ export const configure = async (dreadcabinet: DreadCabinet.DreadCabinet, cardiga
         .summary('Create Intelligent Release Notes or Change Logs from Git')
         .description('Create Intelligent Release Notes or Change Logs from Git')
         .argument('<job>', 'Type of summary to generate')
-        .argument('<year>', 'Year for the summary')
-        .argument('<month>', 'Month for the summary')
-        .argument('[historyMonths]', `Number of months of history to include (Default: ${DEFAULT_HISTORY_MONTHS})`)
-        .argument('[summaryMonths]', `Number of months to summarize (Default: ${DEFAULT_SUMMARY_MONTHS})`)
+        .argument('[year]', 'Year for the summary (defaults to current year)')
+        .argument('[period]', 'Month (1-12) or Week (1-53) for the summary (defaults to current period)')
+        .argument('[historyPeriods]', `Number of periods of history to include (Default: ${DEFAULT_HISTORY_MONTHS} for monthly, ${DEFAULT_HISTORY_WEEKS} for weekly)`)
+        .argument('[summaryPeriods]', `Number of periods to summarize (Default: ${DEFAULT_SUMMARY_MONTHS} for monthly, ${DEFAULT_SUMMARY_WEEKS} for weekly)`)
         .option('--dry-run', `perform a dry run without saving files (Default: ${DEFAULT_DRY_RUN})`)
         .option('--verbose', `enable verbose logging (Default: ${DEFAULT_VERBOSE})`)
         .option('--debug', `enable debug logging (Default: ${DEFAULT_DEBUG})`)
@@ -30,6 +30,7 @@ export const configure = async (dreadcabinet: DreadCabinet.DreadCabinet, cardiga
         .option('--activity-directory <activityDirectory>', `directory containing activity files to be included in prompts (Default: ${DEFAULT_ACTIVITY_DIR})`)
         .option('--summary-directory <summaryDirectory>', `directory containing summary files to be included in prompts (Default: ${DEFAULT_SUMMARY_DIR})`)
         .option('--replace', `replace existing summary files if they exist (Default: ${DEFAULT_REPLACE})`)
+        .option('--period-type <periodType>', `Period type: 'month' or 'week' (auto-detected if not specified)`)
         .version(VERSION);
 
     await dreadcabinet.configure(program);
@@ -52,64 +53,125 @@ export const configure = async (dreadcabinet: DreadCabinet.DreadCabinet, cardiga
         ...KRONOLOGI_DEFAULTS,
         ...fileValues,   // Apply file values (overwrites defaults), ensure object
         ...dreadcabinetValues,              // Apply all CLI args last (highest precedence for all keys, including Dreadcabinet's)
+        ...cliArgs,                         // Apply CLI args to ensure all flags are captured
     } as KronologiConfig;
     await validateKronologiConfig(kronologiConfig);
 
     const cliJobArguments: Partial<JobConfig> = parseJobArguments(program.args);
     const jobConfig: JobConfig = {
+        ...JOB_DEFAULTS,
         ...cliJobArguments,
-        ...fileValues.job,
+        ...(fileValues.job || {}),
     } as JobConfig;
 
     return [kronologiConfig, jobConfig];
 }
 
+/**
+ * Calculate the current week number (Sunday-based)
+ */
+function getCurrentWeek(): number {
+    const now = new Date();
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const dayOfYear = Math.floor((now.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000));
+    const firstDayOfYear = startOfYear.getDay(); // 0 = Sunday
+    const daysUntilFirstSunday = firstDayOfYear === 0 ? 0 : 7 - firstDayOfYear;
+    const daysSinceFirstSunday = dayOfYear - daysUntilFirstSunday;
+    return daysSinceFirstSunday < 0 ? 1 : Math.floor(daysSinceFirstSunday / 7) + 1;
+}
+
 function parseJobArguments(args: string[]): Partial<JobConfig> {
-    const [job, year, month, historyMonths, summaryMonths] = args;
+    const [job, year, period, historyPeriods, summaryPeriods] = args;
 
     // Validate required arguments
     if (!job) {
         throw new Error('Job is required');
     }
-    if (!year) {
-        throw new Error('Year is required');
-    }
-    if (!month) {
-        throw new Error('Month is required');
-    }
 
-    // Validate year and month format
-    const yearNum = parseInt(year);
+    // Default to current year and period if not provided
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1; // JavaScript months are 0-based
+    const currentWeek = getCurrentWeek();
+
+    // Determine if this is a weekly job based on job name
+    const isWeeklyJob = /week/i.test(job);
+
+    // Use provided year or default to current
+    const yearNum = year ? parseInt(year) : currentYear;
     if (isNaN(yearNum) || yearNum < 1900 || yearNum > 2100) {
         throw new Error('Year must be a valid number between 1900 and 2100');
     }
 
-    const monthNum = parseInt(month);
-    if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
-        throw new Error('Month must be a valid number between 1 and 12');
+    // Use provided period or default to current week/month based on job type
+    let periodNum: number;
+    if (period) {
+        periodNum = parseInt(period);
+        if (isNaN(periodNum) || periodNum < 1) {
+            throw new Error('Period must be a positive number');
+        }
+    } else {
+        // Default to current period based on job type
+        periodNum = isWeeklyJob ? currentWeek : currentMonth;
+    }
+
+    // Determine if this is a month or week based on the value and job name
+    // Months: 1-12, Weeks: 1-53
+    let periodType: 'month' | 'week';
+    
+    if (periodNum > 12 && periodNum <= 53) {
+        // Must be a week (13-53)
+        periodType = 'week';
+    } else if (periodNum <= 12) {
+        // Could be either month (1-12) or week (1-12)
+        // Use job name as a hint, otherwise default to month for backward compatibility
+        periodType = isWeeklyJob ? 'week' : 'month';
+    } else {
+        throw new Error('Period must be between 1-12 for months or 1-53 for weeks');
     }
 
     const jobConfig: Partial<JobConfig> = {
         job: job,
         year: yearNum,
-        month: monthNum,
+        periodType: periodType,
     }
 
-    if (historyMonths) {
-        // Validate historyMonths and summaryMonths
-        const historyMonthsNum = parseInt(historyMonths);
-        if (isNaN(historyMonthsNum) || historyMonthsNum < 1) {
-            throw new Error('History months must be a positive number');
+    if (periodType === 'month') {
+        jobConfig.month = periodNum;
+        
+        if (historyPeriods) {
+            const historyPeriodsNum = parseInt(historyPeriods);
+            if (isNaN(historyPeriodsNum) || historyPeriodsNum < 1) {
+                throw new Error('History periods must be a positive number');
+            }
+            jobConfig.historyMonths = historyPeriodsNum;
         }
-        jobConfig.historyMonths = historyMonthsNum;
-    }
 
-    if (summaryMonths) {
-        const summaryMonthsNum = parseInt(summaryMonths);
-        if (isNaN(summaryMonthsNum) || summaryMonthsNum < 1) {
-            throw new Error('Summary months must be a positive number');
+        if (summaryPeriods) {
+            const summaryPeriodsNum = parseInt(summaryPeriods);
+            if (isNaN(summaryPeriodsNum) || summaryPeriodsNum < 1) {
+                throw new Error('Summary periods must be a positive number');
+            }
+            jobConfig.summaryMonths = summaryPeriodsNum;
         }
-        jobConfig.summaryMonths = summaryMonthsNum;
+    } else {
+        jobConfig.week = periodNum;
+        
+        if (historyPeriods) {
+            const historyPeriodsNum = parseInt(historyPeriods);
+            if (isNaN(historyPeriodsNum) || historyPeriodsNum < 1) {
+                throw new Error('History periods must be a positive number');
+            }
+            jobConfig.historyWeeks = historyPeriodsNum;
+        }
+
+        if (summaryPeriods) {
+            const summaryPeriodsNum = parseInt(summaryPeriods);
+            if (isNaN(summaryPeriodsNum) || summaryPeriodsNum < 1) {
+                throw new Error('Summary periods must be a positive number');
+            }
+            jobConfig.summaryWeeks = summaryPeriodsNum;
+        }
     }
 
     return jobConfig;

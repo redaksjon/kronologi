@@ -1,0 +1,54 @@
+# Team Update - Parameter Usage Example
+# Demonstrates dynamic configuration using parameters
+
+model: gpt-4o-mini
+temperature: 0.7
+maxCompletionTokens: 3000
+
+parameters:
+  year:
+    type: number
+    description: Year for the update
+  month:
+    type: number
+    description: Month for the update (1-12)
+  team:
+    type: string
+    description: Team name
+    required: true
+  include_metrics:
+    type: boolean
+    description: Whether to include metrics section
+    default: true
+
+content:
+  # Team-specific activity using parameter
+  team_activity:
+    type: activity
+    name: Team Activity
+    directory: 'teams/{{parameters.team}}'
+    pattern: '*.md'
+
+  # All team activities for context
+  all_teams:
+    type: activity
+    name: Organization Activity
+    directory: 'teams'
+    pattern: '**/*.md'
+
+output:
+  summary:
+    type: summary
+    format: markdown
+    name: Team Update
+    pattern: '{{parameters.team}}-update.md'
+
+  completion:
+    type: metadata
+    format: json
+    pattern: 'completion.json'
+
+  inputs:
+    type: metadata
+    format: json
+    pattern: 'inputs.json'

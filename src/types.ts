@@ -30,9 +30,13 @@ export const KronologiConfigSchema = z.object({
 export const JobConfigSchema = z.object({
     job: z.string(),
     year: z.number(),
-    month: z.number(),
-    historyMonths: z.number(),
-    summaryMonths: z.number(),
+    month: z.number().optional(),
+    week: z.number().optional(),
+    historyMonths: z.number().optional(),
+    summaryMonths: z.number().optional(),
+    historyWeeks: z.number().optional(),
+    summaryWeeks: z.number().optional(),
+    periodType: z.enum(['month', 'week']).optional(),
 });
 
 export type KronologiConfig = z.infer<typeof KronologiConfigSchema> & Dreadcabinet.Config & Cardigantime.Config;
@@ -55,6 +59,7 @@ export interface HistoryContextConfig extends ContextConfig {
     name: string;
     from: string;
     months?: number | string;
+    weeks?: number | string;
     include?: boolean;
 }
 
@@ -72,6 +77,13 @@ export interface OutputConfig {
     pattern: string;
 }
 
+export interface ReasoningConfigType {
+    enabled: boolean;
+    provider?: 'anthropic' | 'openai';
+    maxIterations?: number;
+    tools?: string[];  // Tool names to enable
+}
+
 export interface AnalysisConfig {
     name: string;
     parameters: {
@@ -85,6 +97,7 @@ export interface AnalysisConfig {
     temperature: number;
     maxCompletionTokens: number;
     model: string;
+    reasoning?: ReasoningConfigType;  // Optional reasoning config
     context: {
         [key: string]: StaticContextConfig | HistoryContextConfig;
     };

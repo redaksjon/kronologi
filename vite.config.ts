@@ -32,12 +32,15 @@ try {
 }
 
 
+const isProduction = process.env.NODE_ENV === 'production' || process.argv.includes('build');
+
 export default defineConfig({
     server: {
         port: 3000
     },
     plugins: [
-        ...VitePluginNode({
+        // Only use VitePluginNode in dev mode, not for builds
+        ...(isProduction ? [] : VitePluginNode({
             adapter: 'express',
             appPath: './src/main.ts',
             exportName: 'viteNodeApp',
@@ -45,12 +48,7 @@ export default defineConfig({
             swcOptions: {
                 sourceMaps: true,
             },
-        }),
-        // visualizer({
-        //     template: 'network',
-        //     filename: 'network.html',
-        //     projectRoot: process.cwd(),
-        // }),
+        })),
         replace({
             '__VERSION__': process.env.npm_package_version,
             '__GIT_BRANCH__': gitInfo.branch,
@@ -60,30 +58,48 @@ export default defineConfig({
             '__SYSTEM_INFO__': `${process.platform} ${process.arch} ${process.version}`,
             preventAssignment: true,
         }),
+        shebang({
+            shebang: '#!/usr/bin/env node',
+        }),
     ],
     build: {
         target: 'esnext',
         outDir: 'dist',
-        lib: {
-            entry: './src/main.ts',
-            formats: ['es'],
-        },
+        ssr: true,
         rollupOptions: {
-            external: ['@riotprompt/riotprompt', '@riotprompt/riotprompt/formatter', '@riotprompt/riotprompt/chat'],
-            input: 'src/main.ts',
+            external: [
+                '@riotprompt/riotprompt', 
+                '@riotprompt/riotprompt/formatter', 
+                '@riotprompt/riotprompt/chat',
+                '@anthropic-ai/sdk',
+                '@google/generative-ai',
+                '@modelcontextprotocol/sdk',
+                '@theunwalked/cardigantime',
+                '@theunwalked/dreadcabinet',
+                'commander',
+                'dayjs',
+                'dotenv',
+                'dotenv/config',
+                'glob',
+                'js-yaml',
+                'luxon',
+                'moment-timezone',
+                'openai',
+                'winston',
+                'zod',
+            ],
+            input: {
+                'main': 'src/main.ts',
+                'init-job': 'src/init-job.ts',
+                'validate-job': 'src/validate-job.ts',
+                'mcp/server': 'src/mcp/server.ts',
+            },
             output: {
                 format: 'esm',
                 entryFileNames: '[name].js',
-                preserveModules: true,
-                exports: 'named',
+                chunkFileNames: 'chunks/[name]-[hash].js',
             },
-            plugins: [
-                shebang({
-                    shebang: '#!/usr/bin/env node',
-                }),
-            ],
         },
-        // Make sure Vite generates ESM-compatible code
         modulePreload: false,
         minify: false,
         sourcemap: true

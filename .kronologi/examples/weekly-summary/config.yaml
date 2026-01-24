@@ -1,0 +1,49 @@
+# Weekly Summary Template
+# This template creates weekly summaries from activity files
+# Weeks run Sunday through Saturday, starting from the first Sunday of the year
+
+model: gpt-4o-mini
+temperature: 0.7
+
+parameters:
+  year:
+    type: number
+    description: Year for the summary
+  week:
+    type: number
+    description: Week number for the summary (1-53)
+
+# Empty context section (required even if not used)
+# Add historical context by uncommenting:
+# context:
+#   previous_week:
+#     type: history
+#     name: Previous Week Summary
+#     from: summary
+#     weeks: 1
+
+context: {}
+
+content:
+  activity:
+    type: activity
+    name: Weekly Activity
+    directory: 'notes'
+    pattern: '*.md'
+
+output:
+  summary:
+    type: summary
+    format: markdown
+    name: Weekly Summary
+    pattern: 'summary.md'
+
+  completion:
+    type: metadata
+    format: json
+    pattern: 'completion.json'
+
+  inputs:
+    type: metadata
+    format: json
+    pattern: 'inputs.json'
