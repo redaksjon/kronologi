@@ -382,5 +382,3 @@ cat ~/Library/Logs/Claude/mcp*.log
 ## Name Origin
 
 The name "Kronologi" comes from the Norwegian word for "chronology" or "timeline", reflecting its purpose of creating temporal reports and documentation of your work over customizable timeperiods.
-TEST
-TEST
