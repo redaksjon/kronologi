@@ -30,9 +30,13 @@ export const KronologiConfigSchema = z.object({
 export const JobConfigSchema = z.object({
     job: z.string(),
     year: z.number(),
-    month: z.number(),
-    historyMonths: z.number(),
-    summaryMonths: z.number(),
+    month: z.number().optional(),
+    week: z.number().optional(),
+    historyMonths: z.number().optional(),
+    summaryMonths: z.number().optional(),
+    historyWeeks: z.number().optional(),
+    summaryWeeks: z.number().optional(),
+    periodType: z.enum(['month', 'week']).optional(),
 });
 
 export type KronologiConfig = z.infer<typeof KronologiConfigSchema> & Dreadcabinet.Config & Cardigantime.Config;
@@ -55,6 +59,7 @@ export interface HistoryContextConfig extends ContextConfig {
     name: string;
     from: string;
     months?: number | string;
+    weeks?: number | string;
     include?: boolean;
 }
 

@@ -46,9 +46,15 @@ export const createConfig = async (jobName: string, configPath: string): Promise
                 if (!value.from) {
                     throw new Error(`Missing required 'from' property for history context ${key} in ${configPath}/config.yaml`);
                 }
-                // months is optional but must be a number if provided
+                
+                // Validate months if provided
                 if (value.months && (typeof value.months !== 'number' && !(typeof value.months === 'string' && /^\${.*}$/.test(value.months)))) {
                     throw new Error(`Invalid months property for history context ${key} in ${configPath}/config.yaml - must be a number or parameter reference`);
+                }
+
+                // Validate weeks if provided
+                if (value.weeks && (typeof value.weeks !== 'number' && !(typeof value.weeks === 'string' && /^\${.*}$/.test(value.weeks)))) {
+                    throw new Error(`Invalid weeks property for history context ${key} in ${configPath}/config.yaml - must be a number or parameter reference`);
                 }
 
                 // If months is a parameter reference, validate it points to a valid numeric parameter
@@ -67,6 +73,25 @@ export const createConfig = async (jobName: string, configPath: string): Promise
 
                     if (!param.required && param.default === undefined) {
                         throw new Error(`Parameter ${paramName} referenced in months for history context ${key} must be required or have a default value`);
+                    }
+                }
+
+                // If weeks is a parameter reference, validate it points to a valid numeric parameter
+                if (typeof value.weeks === 'string' && /^\${parameters\.(.*)}$/.test(value.weeks)) {
+                    const paramMatch = value.weeks.match(/^\${parameters\.(.*)}$/);
+                    const paramName = paramMatch![1];
+                    const param = config.parameters?.[paramName];
+
+                    if (!param) {
+                        throw new Error(`Parameter ${paramName} referenced in weeks for history context ${key} not found in config parameters`);
+                    }
+
+                    if (param.type !== 'number') {
+                        throw new Error(`Parameter ${paramName} referenced in weeks for history context ${key} must be of type number`);
+                    }
+
+                    if (!param.required && param.default === undefined) {
+                        throw new Error(`Parameter ${paramName} referenced in weeks for history context ${key} must be required or have a default value`);
                     }
                 }
                 break;

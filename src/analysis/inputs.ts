@@ -10,15 +10,21 @@ import { replaceParameters } from './section';
 /**
  * Main function that creates inputs for analysis by combining configuration, parameters, and content generation
  */
-export const createInputs = async (analysisName: string, params: Record<string, string | number>, mindshahnConfig: KronologiConfig, jobConfig: JobConfig): Promise<Inputs> => {
-    const configPath = join(mindshahnConfig.configDirectory, jobConfig.job);
+export const createInputs = async (analysisName: string, params: Record<string, string | number | undefined>, mindshahnConfig: KronologiConfig, jobConfig: JobConfig): Promise<Inputs> => {
+    const configPath = join(mindshahnConfig.configDirectory, 'jobs', jobConfig.job);
     checkDirectory(configPath);
 
     // Load and validate configuration
     const config = await createConfig(jobConfig.job, configPath);
 
-    // Process parameters
-    const parameters = createParameters(config, params);
+    // Process parameters - filter out undefined values
+    const filteredParams: Record<string, string | number> = {};
+    for (const [key, value] of Object.entries(params)) {
+        if (value !== undefined) {
+            filteredParams[key] = value;
+        }
+    }
+    const parameters = createParameters(config, filteredParams);
 
     // Generate prompt sections
     let persona: Section<Instruction> = await generatePersona(configPath);

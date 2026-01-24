@@ -2,6 +2,10 @@
 
 Get up and running with Kronologi in 5 minutes.
 
+## What's New
+
+**Weekly Summaries**: Kronologi now supports weekly summaries in addition to monthly summaries! See the [Weekly Summaries Guide](./weekly-summaries.md) for details.
+
 ## Installation
 
 ```bash
@@ -20,12 +24,14 @@ kronologi --version
 1. **API Keys**: Set environment variables for your chosen provider
 
 ```bash
-# For OpenAI (traditional mode)
+# For OpenAI (traditional mode, default)
 export OPENAI_API_KEY="sk-..."
 
 # For Anthropic (reasoning mode)
 export ANTHROPIC_API_KEY="sk-ant-..."
 ```
+
+**Note**: Kronologi defaults to using OpenAI's `gpt-4o` model. You can override this in your configuration or via the `--model` flag.
 
 2. **Node.js**: Version 18 or higher
 
@@ -45,6 +51,7 @@ kronologi-init
 
 # Or from a template
 kronologi-init --template monthly-summary my-first-job
+kronologi-init --template weekly-summary my-weekly
 
 # List available templates
 kronologi-init --list-templates
@@ -55,8 +62,11 @@ This creates:
 ~/.kronologi/context/my-first-job/
 ├── analysis.yml       # Job configuration
 ├── persona.md         # AI persona
-└── instructions.md    # Task instructions
+├── instructions.md    # Task instructions
+└── README.md          # Template usage guide
 ```
+
+**Tip**: Each template includes a comprehensive README.md that explains how to use it, customize it, and troubleshoot common issues. Read this first!
 
 ### Step 2: Add Activity Data
 
@@ -79,15 +89,24 @@ EOF
 
 ### Step 3: Generate Summary
 
-Run Kronologi with the new command format:
+Run Kronologi:
 
 ```bash
-# New format (recommended)
-kronologi --job my-first-job --year 2026 --month 1
-
-# Legacy format (still works)
+# Generate monthly summary
 kronologi my-first-job 2026 1
+
+# Generate weekly summary (auto-detects current week)
+cd ~/.kronologi && kronologi my-weekly-job
+
+# Generate weekly summary for specific week
+kronologi my-weekly-job 2026 4
 ```
+
+**Note**: Kronologi automatically detects whether you want a monthly or weekly summary based on:
+- Job name containing "week" → weekly mode
+- Period values 1-12 → monthly (default)
+- Period values 13-53 → always weekly
+- No arguments → uses current year/week (for weekly jobs)
 
 **Output**:
 ```
@@ -153,7 +172,9 @@ reasoning:
 
 ## Use with Claude Desktop (MCP)
 
-Configure Kronologi as an MCP server for Claude Desktop:
+Kronologi includes a Model Context Protocol (MCP) server for seamless integration with AI assistants.
+
+### Setup
 
 1. **Add to Claude config** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
 
@@ -171,8 +192,50 @@ Configure Kronologi as an MCP server for Claude Desktop:
 
 3. **Ask Claude**:
    - "Generate a monthly report for my-first-job for January 2026"
+   - "Generate a weekly summary for this week"
    - "List all Kronologi jobs"
    - "Show me the report for my-first-job from January 2026"
+   - "What reports are available for project-updates?"
+
+### Available MCP Capabilities
+
+**Tools:**
+- `generate_report` - Create new reports (supports monthly and weekly)
+- `list_jobs` - List all configured jobs
+- `get_report` - Retrieve existing reports
+- `list_reports` - Query available reports with optional filtering
+
+**Resources:**
+- All reports accessible via `kronologi://report/{job}/{year-month}` URIs
+
+**Prompts:**
+- `generate-monthly-report` - Guided report generation workflow
+- `review-recent-reports` - Analyze patterns across reports
+
+### Testing the MCP Server
+
+Use the MCP Inspector to test:
+
+```bash
+npx @modelcontextprotocol/inspector kronologi-mcp
+```
+
+### Troubleshooting MCP
+
+**Server won't start:**
+```bash
+npm install
+npm run build
+```
+
+**Jobs not found:**
+- Verify `KRONOLOGI_DIR` is set correctly
+- Check jobs exist in `~/.kronologi/context/`
+
+**Reports not generating:**
+- Ensure API keys are configured (OPENAI_API_KEY or ANTHROPIC_API_KEY)
+- Verify activity files exist for the specified period
+- Check job configuration with `kronologi-validate <job>`
 
 ## Next Steps
 

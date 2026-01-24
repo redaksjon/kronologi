@@ -10,12 +10,14 @@ export const DEFAULT_TIMEZONE = 'Etc/UTC';
 export const DATE_FORMAT_MONTH_DAY = 'M-D';
 export const DATE_FORMAT_YEAR = 'YYYY';
 export const DATE_FORMAT_YEAR_MONTH = 'YYYY-M';
+export const DATE_FORMAT_YEAR_WEEK = 'YYYY-W';
 export const DATE_FORMAT_YEAR_MONTH_DAY = 'YYYY-M-D';
 export const DATE_FORMAT_YEAR_MONTH_DAY_SLASH = 'YYYY/M/D';
 export const DATE_FORMAT_YEAR_MONTH_DAY_HOURS_MINUTES = 'YYYY-M-D-HHmm';
 export const DATE_FORMAT_YEAR_MONTH_DAY_HOURS_MINUTES_SECONDS = 'YYYY-M-D-HHmmss';
 export const DATE_FORMAT_YEAR_MONTH_DAY_HOURS_MINUTES_SECONDS_MILLISECONDS = 'YYYY-M-D-HHmmss.SSS';
 export const DATE_FORMAT_MONTH = 'M';
+export const DATE_FORMAT_WEEK = 'W';
 export const DATE_FORMAT_DAY = 'D';
 export const DATE_FORMAT_HOURS = 'HHmm';
 export const DATE_FORMAT_MINUTES = 'mm';
@@ -41,20 +43,23 @@ export const JOB_REQUIRED_FILES = [JOB_CONFIG_FILE, JOB_PERSONA_PROMPT_FILE, JOB
 
 export const DEFAULT_JOB_DIR = `./.${PROGRAM_NAME}/jobs`;
 
-export const DEFAULT_CONTEXT_DIR = `./context`;
-export const DEFAULT_ACTIVITY_DIR = `./activity`;
-export const DEFAULT_SUMMARY_DIR = `./summary`;
+export const DEFAULT_CONTEXT_DIR = `context`;
+export const DEFAULT_ACTIVITY_DIR = `activity`;
+export const DEFAULT_SUMMARY_DIR = `summary`;
 
 export const DEFAULT_REPLACE = false;
 
 export const DEFAULT_HISTORY_MONTHS = 1;
 export const DEFAULT_SUMMARY_MONTHS = 1;
+export const DEFAULT_HISTORY_WEEKS = 1;
+export const DEFAULT_SUMMARY_WEEKS = 1;
 
 export const KRONOLOGI_DEFAULTS: Partial<KronologiConfig> = {
     configDirectory: DEFAULT_CONFIG_DIR,
     dryRun: DEFAULT_DRY_RUN,
     verbose: DEFAULT_VERBOSE,
     debug: DEFAULT_DEBUG,
+    model: DEFAULT_MODEL,
     timezone: DEFAULT_TIMEZONE,
     contextDirectory: DEFAULT_CONTEXT_DIR,
     activityDirectory: DEFAULT_ACTIVITY_DIR,
@@ -65,4 +70,6 @@ export const KRONOLOGI_DEFAULTS: Partial<KronologiConfig> = {
 export const JOB_DEFAULTS: Partial<JobConfig> = {
     historyMonths: DEFAULT_HISTORY_MONTHS,
     summaryMonths: DEFAULT_SUMMARY_MONTHS,
+    historyWeeks: DEFAULT_HISTORY_WEEKS,
+    summaryWeeks: DEFAULT_SUMMARY_WEEKS,
 };

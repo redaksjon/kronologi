@@ -445,6 +445,101 @@ async function handleNewTool(args: Record<string, unknown>): Promise<unknown> {
 npx @modelcontextprotocol/inspector kronologi-mcp
 ```
 
+### Testing the MCP Server
+
+**Development Mode:**
+```bash
+npm run watch  # Build in watch mode
+npm run mcp    # Run the server
+```
+
+**With MCP Inspector:**
+```bash
+npx @modelcontextprotocol/inspector kronologi-mcp
+```
+
+**With Claude Desktop:**
+1. Add to config: `~/Library/Application Support/Claude/claude_desktop_config.json`
+2. Restart Claude Desktop
+3. Check logs: `~/Library/Logs/Claude/mcp*.log`
+
+### MCP Server Configuration
+
+The MCP server uses standard Kronologi configuration:
+
+```bash
+# Environment variables
+export KRONOLOGI_DIR=~/.kronologi  # Base directory
+export OPENAI_API_KEY=sk-...       # For OpenAI models
+export ANTHROPIC_API_KEY=sk-ant-...  # For reasoning mode
+```
+
+**Directory structure:**
+- Activity: `$KRONOLOGI_DIR/activity`
+- Summary: `$KRONOLOGI_DIR/summary`
+- Context: `$KRONOLOGI_DIR/context`
+
+### Adding MCP Resources
+
+Resources expose data to AI assistants:
+
+```typescript
+// src/mcp/resources.ts
+export async function listResources(): Promise<Resource[]> {
+  // Return list of available resources
+  return [
+    {
+      uri: 'kronologi://report/job/2026-01',
+      name: 'Report Name',
+      mimeType: 'text/markdown',
+    },
+  ];
+}
+
+export async function readResource(uri: string): Promise<string> {
+  // Parse URI and return resource content
+  const { job, period } = parseUri(uri);
+  return await loadReport(job, period);
+}
+```
+
+### Adding MCP Prompts
+
+Prompts provide guided workflows:
+
+```typescript
+// src/mcp/prompts.ts
+export const prompts = [
+  {
+    name: 'new-workflow',
+    description: 'Description of the workflow',
+    arguments: [
+      {
+        name: 'arg1',
+        description: 'Argument description',
+        required: true,
+      },
+    ],
+  },
+];
+
+export async function getPrompt(name: string, args: Record<string, string>) {
+  if (name === 'new-workflow') {
+    return {
+      messages: [
+        {
+          role: 'user',
+          content: {
+            type: 'text',
+            text: `Workflow prompt with ${args.arg1}`,
+          },
+        },
+      ],
+    };
+  }
+}
+```
+
 ## Code Style
 
 ### TypeScript Guidelines

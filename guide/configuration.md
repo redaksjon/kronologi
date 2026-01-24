@@ -10,8 +10,14 @@ Kronologi uses a hierarchical configuration system:
 1. Command-line arguments (highest priority)
 2. Environment variables
 3. Job configuration (.kronologi/jobs/<job>/config.yaml)
-4. Default values (lowest priority)
+4. Root configuration (.kronologi/config.yaml)
+5. Default values (lowest priority)
 ```
+
+**Default Model**: If no model is specified anywhere in the configuration hierarchy, Kronologi defaults to `gpt-4o`. You can override this at any level:
+- In the root config file (`.kronologi/config.yaml`)
+- In the job config file (`.kronologi/jobs/<job>/config.yaml`)
+- Via command line (`--model gpt-4o-mini`)
 
 ## Directory Structure
 
@@ -412,6 +418,18 @@ parameters:
     min: 1
     max: 12
 
+  week:
+    type: number
+    required: false
+    min: 1
+    max: 53
+    description: "Week number for weekly summaries"
+
+  historyWeeks:
+    type: number
+    default: 1
+    description: "Number of weeks of history to include"
+
   project:
     type: string
     default: "Main Project"
@@ -424,6 +442,8 @@ parameters:
     type: boolean
     default: true
 ```
+
+**Note**: For weekly summaries, use `week` instead of `month` parameter. Weeks are numbered 1-53 using Sunday-based week numbering.
 
 ### Parameter Types
 
@@ -524,12 +544,19 @@ context:
     name: Previous Month Summary
     from: summary            # Reference output section
     months: 1                # How many previous months
+
+  previous_week_summary:
+    type: summary
+    name: Previous Week Summary
+    from: summary
+    weeks: 1                 # How many previous weeks
 ```
 
 **Behavior**:
 - Reads from `summary/` directory
-- Automatically calculates previous month dates
+- Automatically calculates previous period dates
 - Provides continuity between summaries
+- Supports both `months` and `weeks` parameters
 
 ### History Context
 
@@ -542,12 +569,20 @@ context:
     name: Last Quarter Context
     from: activity           # Reference content section
     months: 3
+
+  recent_weeks_context:
+    type: history
+    name: Recent Weeks Context
+    from: activity
+    weeks: ${parameters.historyWeeks}  # Dynamic based on parameter
 ```
 
 **Behavior**:
 - References content from another section
 - Includes in context (background) instead of content (analysis target)
 - Useful for "what led to this" information
+- Supports both `months` and `weeks` parameters
+- Can use parameter references for dynamic values
 
 ## Content Configuration
 
@@ -588,12 +623,20 @@ content:
     directory: ''
     pattern: '**/*.md'
     months: 3                # Include last 3 months
+
+  weekly_history:
+    type: activity
+    name: Previous Weeks
+    directory: 'notes'
+    pattern: '*.md'
+    weeks: 2                 # Include last 2 weeks
 ```
 
 **Behavior**:
-- Automatically finds files from previous months
+- Automatically finds files from previous periods
 - Uses date-based directory traversal
-- Respects `historyMonths` CLI parameter
+- Respects `historyMonths` or `historyWeeks` CLI parameter
+- For weekly summaries, uses "Week N" directory structure
 
 ### Summary Content
 
@@ -954,6 +997,14 @@ kronologi release-notes 2026 1 --verbose
 model: gpt-4o-mini
 temperature: 0.7
 
+parameters:
+  year:
+    type: number
+  month:
+    type: number
+
+context: {}
+
 content:
   activity:
     type: activity
@@ -968,6 +1019,35 @@ output:
 ```
 
 **Use case**: Basic monthly notes summarization
+
+### Pattern 1b: Simple Weekly Summary
+
+```yaml
+model: gpt-4o-mini
+temperature: 0.7
+
+parameters:
+  year:
+    type: number
+  week:
+    type: number
+
+context: {}
+
+content:
+  activity:
+    type: activity
+    directory: 'notes'
+    pattern: '*.md'
+
+output:
+  summary:
+    type: summary
+    format: markdown
+    pattern: 'summary.md'
+```
+
+**Use case**: Basic weekly notes summarization with auto-detection
 
 ### Pattern 2: Release Notes with History
 

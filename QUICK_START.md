@@ -272,7 +272,8 @@ output:
 
 ## Next Steps
 
-- **Read**: [MCP_GUIDE.md](./MCP_GUIDE.md) for MCP details
+- **Read**: [Quick Start Guide](./guide/quickstart.md) for detailed setup
+- **MCP Setup**: [Claude Desktop Integration](./guide/quickstart.md#use-with-claude-desktop-mcp)
 - **Explore**: [guide/](./guide/) for comprehensive documentation
 - **Examples**: [.kronologi/examples/](~/.kronologi/examples/) for templates
 - **Help**: [GitHub Issues](https://github.com/redaksjon/kronologi/issues)

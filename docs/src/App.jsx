@@ -10,7 +10,7 @@ function App() {
                     <div className="badge">Intelligent Reporting with AI Reasoning</div>
                     <h1 className="title">Kronologi</h1>
                     <p className="tagline">
-                        Transform your activity and context into comprehensive reports for any timeperiod.
+                        Transform your activity and context into comprehensive reports for any timeperiod—weekly, monthly, or custom intervals.
                         <br />
                         <span className="highlight">AI-powered reports with agentic exploration, tool use, and seamless assistant integration.</span>
                     </p>
@@ -187,12 +187,16 @@ reasoning:
                             <div className="config-code">
                                 <pre>{`# Create a new job from template
 kronologi-init --template monthly-summary my-job
+kronologi-init --template weekly-summary my-weekly
 
 # Validate configuration
 kronologi-validate my-job
 
-# Generate report (new format)
+# Generate monthly report
 kronologi --job my-job --year 2026 --month 1
+
+# Generate weekly report (auto-detects current week)
+cd /path/to/activity && kronologi weekly-summary
 
 # Generate with extended history
 kronologi --job my-job --year 2026 --month 1 --history-months 3
@@ -238,8 +242,8 @@ content:
                             <p>Automatically generate comprehensive release notes from Git history and activity logs.</p>
                         </div>
                         <div className="use-case-card">
-                            <h3>📊 Periodic Reports</h3>
-                            <p>Create detailed weekly, monthly, or quarterly progress reports for stakeholders and team members.</p>
+                            <h3>📊 Weekly & Monthly Reports</h3>
+                            <p>Create detailed weekly or monthly progress reports with automatic period detection. Just run <code>kronologi weekly-summary</code> to generate a summary for the current week.</p>
                         </div>
                         <div className="use-case-card">
                             <h3>📝 Change Logs</h3>
@@ -367,7 +371,7 @@ content:
                             <a href="https://www.npmjs.com/package/@redaksjon/kronologi" target="_blank" rel="noopener noreferrer">npm</a>
                             <a href="https://github.com/redaksjon/kronologi/blob/main/README.md" target="_blank" rel="noopener noreferrer">Documentation</a>
                             <a href="https://github.com/redaksjon/kronologi/blob/main/guide/index.md" target="_blank" rel="noopener noreferrer">Guide</a>
-                            <a href="https://github.com/redaksjon/kronologi/blob/main/MCP_GUIDE.md" target="_blank" rel="noopener noreferrer">MCP Guide</a>
+                            <a href="https://github.com/redaksjon/kronologi/blob/main/guide/quickstart.md#use-with-claude-desktop-mcp" target="_blank" rel="noopener noreferrer">MCP Setup</a>
                             <a href="https://github.com/redaksjon/kronologi/issues" target="_blank" rel="noopener noreferrer">Issues</a>
                         </div>
                         <div className="footer-copy">

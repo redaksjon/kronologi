@@ -7,6 +7,7 @@ Kronologi is a powerful tool for generating intelligent reports and summaries fr
 ## Features
 
 - **Intelligent Reports**: Generate AI-powered reports for any timeperiod (monthly, weekly, custom intervals)
+- **Weekly & Monthly Summaries**: Automatic week detection with Sunday-Saturday weeks, or traditional monthly reports
 - **Multiple AI Providers**: Support for both OpenAI (GPT-4) and Anthropic (Claude) models
 - **Reasoning Mode**: Enable agentic workflows where AI can explore files, search content, and make intelligent decisions
 - **MCP Server**: Full integration with AI assistants like Claude Desktop via Model Context Protocol
@@ -33,6 +34,7 @@ kronologi-init
 
 # From template
 kronologi-init --template monthly-summary my-job
+kronologi-init --template weekly-summary my-weekly
 
 # List available templates
 kronologi-init --list-templates
@@ -41,8 +43,15 @@ kronologi-init --list-templates
 ### Generate a Report
 
 ```bash
-# Basic usage
+# Monthly report
 kronologi --job monthly-summary --year 2026 --month 1
+
+# Weekly report (auto-detects current week)
+cd /path/to/activity/directory
+kronologi weekly-summary
+
+# Weekly report for specific week
+kronologi weekly-summary 2026 4
 
 # With custom history
 kronologi --job my-job --year 2026 --month 1 --history-months 3
@@ -67,14 +76,16 @@ Kronologi provides a rich set of command line options to customize its behavior:
 
 ### Required Arguments
 
-- `<summaryType>`: Type of summary to generate
-- `<year>`: Year for the summary (must be between 1900 and 2100)
-- `<month>`: Month for the summary (1-12)
+- `<summaryType>`: Type of summary to generate (e.g., `monthly-summary`, `weekly-summary`)
+- `<year>`: Year for the summary (optional for weekly summaries - defaults to current year)
+- `<period>`: Period for the summary
+  - For monthly: 1-12 (month number)
+  - For weekly: 1-53 (week number, optional - defaults to current week)
 
 ### Optional Arguments
 
-- `[historyMonths]`: Number of months of history to include (default: 1)
-- `[summaryMonths]`: Number of months to summarize (default: 1)
+- `[historyPeriods]`: Number of periods of history to include (default: 1)
+- `[summaryPeriods]`: Number of periods to summarize (default: 1)
 
 ### Options
 
@@ -109,24 +120,36 @@ export ANTHROPIC_API_KEY=sk-ant-...  # For reasoning mode with Anthropic
 kronologi --job monthly-summary --year 2026 --month 1
 ```
 
-2. Generate with extended history:
+2. Generate a weekly report (auto-detects current week):
 ```bash
-kronologi --job team-updates --year 2026 --month 1 --history-months 3
+cd /path/to/activity/directory
+kronologi weekly-summary
 ```
 
-3. Generate using reasoning mode (configured in analysis.yml):
+3. Generate a weekly report for a specific week:
+```bash
+kronologi weekly-summary 2026 4
+```
+
+4. Generate with extended history:
+```bash
+kronologi --job team-updates --year 2026 --month 1 --history-months 3
+kronologi weekly-summary 2026 4 2 1  # Week 4 with 2 weeks history
+```
+
+5. Generate using reasoning mode (configured in analysis.yml):
 ```bash
 # First enable reasoning in ~/.kronologi/context/my-job/analysis.yml
 # Then run normally:
 kronologi --job my-job --year 2026 --month 1
 ```
 
-4. Replace an existing report:
+6. Replace an existing report:
 ```bash
 kronologi --job my-job --year 2026 --month 1 --replace
 ```
 
-5. Legacy format (still supported):
+7. Legacy format (still supported):
 ```bash
 kronologi release-notes 2024 1
 kronologi quarterly-review 2024 1 --timezone America/New_York
@@ -193,7 +216,9 @@ reasoning:
 
 ### MCP Server Integration
 
-Use Kronologi with Claude Desktop and other AI assistants:
+Kronologi includes a Model Context Protocol (MCP) server that exposes report generation capabilities to AI assistants like Claude Desktop, enabling natural language interaction with your reports.
+
+#### Quick Setup
 
 1. **Configure Claude Desktop** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
 ```json
@@ -211,18 +236,53 @@ Use Kronologi with Claude Desktop and other AI assistants:
 3. **Ask Claude to generate reports**:
 ```
 "Generate a monthly report for project-updates for January 2026"
+"List all available Kronologi jobs"
+"Show me the report from last month"
 ```
 
-**Available MCP Tools:**
-- `generate_report` - Generate reports for any job
-- `list_jobs` - List available job configurations
-- `get_report` - Retrieve existing reports
-- `list_reports` - Query available reports
+#### Available MCP Tools
 
-**Resources:**
-- All generated reports are exposed as `kronologi://report/{job}/{year-month}` resources
+- **`generate_report`** - Generate reports for any job
+  - Parameters: `job`, `year`, `month`, `historyMonths`, `summaryMonths`, `replace`
+  - Supports both monthly and weekly reports
+  
+- **`list_jobs`** - List available job configurations
+  - Returns all configured jobs from `~/.kronologi/context/`
+  
+- **`get_report`** - Retrieve existing reports
+  - Parameters: `job`, `year`, `month`
+  - Returns report content in markdown format
+  
+- **`list_reports`** - Query available reports
+  - Optional parameter: `job` (filter by job name)
+  - Returns array of reports with metadata
 
-For complete MCP documentation, see [MCP_GUIDE.md](./MCP_GUIDE.md).
+#### MCP Resources
+
+All generated reports are exposed as MCP resources with URI format:
+```
+kronologi://report/{job}/{year-month}
+```
+
+Example: `kronologi://report/monthly-summary/2026-01`
+
+#### MCP Prompts
+
+- **`generate-monthly-report`** - Guided workflow for generating reports
+- **`review-recent-reports`** - Analyze recent reports for patterns
+
+#### Reasoning Mode with MCP
+
+When reasoning mode is enabled in your job configuration, the MCP server automatically uses it for agentic workflows:
+
+```yaml
+# In your job's analysis.yml
+reasoning:
+  enabled: true
+  provider: anthropic
+```
+
+This enables AI to actively explore files and make intelligent decisions during report generation.
 
 ### Configuration
 
@@ -297,15 +357,26 @@ npm run build
 # Test manually
 npm run mcp
 
+# Test with MCP Inspector
+npx @modelcontextprotocol/inspector kronologi-mcp
+
 # Check logs
 cat ~/Library/Logs/Claude/mcp*.log
 ```
 
+**Common issues:**
+- Missing dependencies: Run `npm install`
+- Jobs not found: Verify `KRONOLOGI_DIR` is set correctly
+- Reports not generating: Check API keys are configured
+
 ## Documentation
 
-- [QUICK_START.md](./QUICK_START.md) - Quick reference guide
-- [MCP_GUIDE.md](./MCP_GUIDE.md) - Complete MCP integration guide
 - [guide/](./guide/) - Comprehensive documentation
+  - [Quick Start](./guide/quickstart.md) - Get started in 5 minutes
+  - [Configuration](./guide/configuration.md) - Complete configuration reference
+  - [Weekly Summaries](./guide/weekly-summaries.md) - Weekly report guide
+  - [Architecture](./guide/architecture.md) - System design
+  - [Development](./guide/development.md) - Contributing guide
 - [examples/](~/.kronologi/examples/) - Template jobs
 
 ## Name Origin

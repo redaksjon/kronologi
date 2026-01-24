@@ -9,12 +9,19 @@ Kronologi is an intelligent reporting tool that uses AI to analyze and synthesiz
 ```bash
 # Create a new job from template
 kronologi-init --template monthly-summary my-job
+kronologi-init --template weekly-summary my-weekly
 
 # Validate job configuration
 kronologi-validate my-job
 
 # Generate a monthly report (new format)
 kronologi --job monthly-summary --year 2026 --month 1
+
+# Generate a weekly report (auto-detects current week)
+cd /path/to/activity && kronologi weekly-summary
+
+# Generate a weekly report for specific week
+kronologi weekly-summary 2026 4
 
 # Generate with historical context
 kronologi --job my-job --year 2026 --month 1 --history-months 3
@@ -37,13 +44,20 @@ kronologi --job my-job --year 2026 --month 1 --replace
 #### New Format (Recommended)
 
 ```bash
+# Monthly reports
 kronologi --job <job-name> --year <year> --month <month> [options]
+
+# Weekly reports (auto-detects current week)
+kronologi <job-name>
+
+# Weekly reports (specific week)
+kronologi <job-name> <year> <week>
 ```
 
 **Required:**
 - `--job <name>`: Job name from `~/.kronologi/context/`
-- `--year <year>`: Year (1900-2100)
-- `--month <month>`: Month (1-12)
+- `--year <year>`: Year (1900-2100, optional for weekly)
+- `--month <month>`: Month (1-12) or `--week <week>`: Week (1-53, optional - auto-detects)
 
 **Options:**
 - `--history-months <n>`: Months of historical activity (default: from config)
@@ -56,7 +70,11 @@ kronologi --job <job-name> --year <year> --month <month> [options]
 #### Legacy Format (Still Supported)
 
 ```bash
+# Monthly
 kronologi <job> <year> <month> [historyMonths] [summaryMonths] [options]
+
+# Weekly (auto-detects current week if year/week omitted)
+kronologi <job> [year] [week] [historyWeeks] [summaryWeeks] [options]
 ```
 
 #### Additional Commands
@@ -106,11 +124,31 @@ Available tools:
 
 ### 4. MCP Server Integration
 
-Full Model Context Protocol support:
-- **AI Assistant Access**: Use Kronologi directly from Claude Desktop or other MCP clients
-- **Tools**: Generate reports, list jobs, retrieve reports, query available reports
-- **Resources**: All reports exposed as `kronologi://report/{job}/{year-month}` resources
-- **Workflows**: Guided prompts for common operations
+Full Model Context Protocol support for seamless AI assistant integration:
+
+**Setup:**
+```json
+{
+  "mcpServers": {
+    "kronologi": {
+      "command": "kronologi-mcp"
+    }
+  }
+}
+```
+
+**Capabilities:**
+- **Tools**: 
+  - `generate_report` - Create monthly or weekly reports
+  - `list_jobs` - List all configured jobs
+  - `get_report` - Retrieve existing reports
+  - `list_reports` - Query available reports with filtering
+- **Resources**: All reports exposed as `kronologi://report/{job}/{year-month}` URIs
+- **Prompts**: 
+  - `generate-monthly-report` - Guided report generation
+  - `review-recent-reports` - Pattern analysis across reports
+- **Natural Language**: Ask Claude to generate reports conversationally
+- **Automatic Reasoning**: Uses reasoning mode when configured in jobs
 
 ### 5. Flexible Configuration
 
@@ -437,7 +475,7 @@ All generated reports are accessible as resources:
 - URI format: `kronologi://report/{job}/{year-month}`
 - Example: `kronologi://report/monthly-summary/2026-01`
 
-For complete MCP documentation, see [MCP_GUIDE.md](../MCP_GUIDE.md).
+For complete MCP setup and usage, see the [Quick Start Guide](./quickstart.md#use-with-claude-desktop-mcp) and [Development Guide](./development.md#adding-a-new-mcp-tool).
 
 ## Getting Help
 

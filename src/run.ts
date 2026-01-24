@@ -13,12 +13,22 @@ export const runModel = async (
     jobConfig: JobConfig,
     existingMonthlySummary?: any,
 ): Promise<{ aiSummary: string, aiUsage: any, monthlySummary: any }> => {
-    const monthlySummary = existingMonthlySummary || await Analysis.createInputs(jobConfig.job, {
+    // Build parameters based on whether this is a week or month-based job
+    const params: Record<string, string | number | undefined> = {
         year: jobConfig.year,
-        month: jobConfig.month,
-        historyMonths: jobConfig.historyMonths,
-        summaryMonths: jobConfig.summaryMonths
-    }, kronologiConfig, jobConfig);
+    };
+
+    if (jobConfig.week !== undefined) {
+        params.week = jobConfig.week;
+        params.historyWeeks = jobConfig.historyWeeks;
+        params.summaryWeeks = jobConfig.summaryWeeks;
+    } else {
+        params.month = jobConfig.month;
+        params.historyMonths = jobConfig.historyMonths;
+        params.summaryMonths = jobConfig.summaryMonths;
+    }
+
+    const monthlySummary = existingMonthlySummary || await Analysis.createInputs(jobConfig.job, params, kronologiConfig, jobConfig);
 
     const messages: Message[] = monthlySummary.request.messages.map((m: any) => ({
         role: m.role,
