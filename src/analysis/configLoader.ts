@@ -27,6 +27,22 @@ export const createConfig = async (jobName: string, configPath: string): Promise
         throw new Error(`Missing required config property in ${configPath}/config.yaml: model`);
     }
 
+    // Validate reasoning config is present (required in reasoning-only mode)
+    if (!config.reasoning) {
+        throw new Error(
+            `Missing required 'reasoning' configuration in ${configPath}/config.yaml. ` +
+            `Kronologi now operates in reasoning-only mode. Please add a 'reasoning' section with 'provider' (openai or anthropic).`
+        );
+    }
+
+    // Validate reasoning provider
+    if (!config.reasoning.provider || !['openai', 'anthropic'].includes(config.reasoning.provider)) {
+        throw new Error(
+            `Invalid or missing 'provider' in reasoning configuration in ${configPath}/config.yaml. ` +
+            `Must be either 'openai' or 'anthropic'.`
+        );
+    }
+
     // Validate each context directory has required properties
     for (const [key, value] of Object.entries(config.context || {})) {
         // Apply name default if not provided
