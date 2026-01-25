@@ -1,8 +1,8 @@
 /**
  * Report Generator
  *
- * Generates reports using the reasoning client with optional tool use.
- * Supports both simple (one-shot) and agentic (tool-enabled) modes.
+ * Generates reports using the reasoning client with tool-based content exploration.
+ * All reports use agentic workflows with tool execution.
  */
 
 import { createReasoningClient } from './client';
@@ -23,31 +23,9 @@ export interface ReportResult {
 }
 
 /**
- * Generate report in simple mode (no tools)
+ * Generate report using reasoning mode with tools
  */
-export async function generateReportSimple(
-    analysisConfig: AnalysisConfig,
-    messages: Message[]
-): Promise<ReportResult> {
-    const client = createReasoningClient({
-        provider: 'openai',  // Default to OpenAI for simple mode
-        model: analysisConfig.model,
-        temperature: analysisConfig.temperature,
-        maxTokens: analysisConfig.maxCompletionTokens,
-    });
-
-    const response = await client.complete(messages);
-
-    return {
-        content: response.content,
-        usage: response.usage,
-    };
-}
-
-/**
- * Generate report with tools (agentic mode)
- */
-export async function generateReportWithTools(
+export async function generateReport(
     analysisConfig: AnalysisConfig,
     messages: Message[],
     toolContext: ToolContext

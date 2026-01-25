@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { generateReportSimple, generateReportWithTools } from '../../src/reasoning/reportGenerator';
+import { generateReport } from '../../src/reasoning/reportGenerator';
 import { AnalysisConfig } from '../../src/types';
 import { Message } from '../../src/reasoning/types';
 import { ToolContext } from '../../src/reasoning/tools/types';
@@ -19,108 +19,7 @@ describe('Report Generator', () => {
         vi.clearAllMocks();
     });
 
-    describe('generateReportSimple', () => {
-        const analysisConfig: AnalysisConfig = {
-            model: 'gpt-4',
-            temperature: 0.7,
-            maxCompletionTokens: 1000,
-            activityDirectory: '/test/activity',
-            summaryDirectory: '/test/summary',
-            contextDirectory: '/test/context',
-        };
-
-        const messages: Message[] = [
-            { role: 'system', content: 'You are a helpful assistant.' },
-            { role: 'user', content: 'Generate a report.' },
-        ];
-
-        it('should generate report in simple mode', async () => {
-            const mockComplete = vi.fn().mockResolvedValue({
-                content: 'Report content',
-                usage: {
-                    inputTokens: 100,
-                    outputTokens: 50,
-                    totalTokens: 150,
-                },
-                model: 'gpt-4',
-                stopReason: 'end_turn',
-            });
-
-            const mockClient = {
-                complete: mockComplete,
-                executeWithTools: vi.fn(),
-            };
-
-            vi.mocked(client.createReasoningClient).mockReturnValue(mockClient as any);
-
-            const result = await generateReportSimple(analysisConfig, messages);
-
-            expect(result).toEqual({
-                content: 'Report content',
-                usage: {
-                    inputTokens: 100,
-                    outputTokens: 50,
-                    totalTokens: 150,
-                },
-            });
-
-            expect(client.createReasoningClient).toHaveBeenCalledWith({
-                provider: 'openai',
-                model: 'gpt-4',
-                temperature: 0.7,
-                maxTokens: 1000,
-            });
-
-            expect(mockComplete).toHaveBeenCalledWith(messages);
-        });
-
-        it('should handle different models', async () => {
-            const mockComplete = vi.fn().mockResolvedValue({
-                content: 'Report',
-                usage: { inputTokens: 50, outputTokens: 25, totalTokens: 75 },
-                model: 'gpt-3.5-turbo',
-                stopReason: 'end_turn',
-            });
-
-            const mockClient = {
-                complete: mockComplete,
-                executeWithTools: vi.fn(),
-            };
-
-            vi.mocked(client.createReasoningClient).mockReturnValue(mockClient as any);
-
-            const customConfig = {
-                ...analysisConfig,
-                model: 'gpt-3.5-turbo',
-                temperature: 0.3,
-                maxCompletionTokens: 500,
-            };
-
-            await generateReportSimple(customConfig, messages);
-
-            expect(client.createReasoningClient).toHaveBeenCalledWith({
-                provider: 'openai',
-                model: 'gpt-3.5-turbo',
-                temperature: 0.3,
-                maxTokens: 500,
-            });
-        });
-
-        it('should propagate errors from client', async () => {
-            const mockComplete = vi.fn().mockRejectedValue(new Error('API Error'));
-
-            const mockClient = {
-                complete: mockComplete,
-                executeWithTools: vi.fn(),
-            };
-
-            vi.mocked(client.createReasoningClient).mockReturnValue(mockClient as any);
-
-            await expect(generateReportSimple(analysisConfig, messages)).rejects.toThrow('API Error');
-        });
-    });
-
-    describe('generateReportWithTools', () => {
+    describe('generateReport', () => {
         const analysisConfig: AnalysisConfig = {
             model: 'claude-3-5-sonnet-20241022',
             temperature: 0.7,
@@ -174,7 +73,7 @@ describe('Report Generator', () => {
 
             vi.mocked(client.createReasoningClient).mockReturnValue(mockClient as any);
 
-            const result = await generateReportWithTools(analysisConfig, messages, toolContext);
+            const result = await generateReport(analysisConfig, messages, toolContext);
 
             expect(result).toEqual({
                 content: 'Analyzed report',
@@ -231,7 +130,7 @@ describe('Report Generator', () => {
 
             vi.mocked(client.createReasoningClient).mockReturnValue(mockClient as any);
 
-            await generateReportWithTools(configWithoutProvider, messages, toolContext);
+            await generateReport(configWithoutProvider as any, messages, toolContext);
 
             expect(client.createReasoningClient).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -263,7 +162,7 @@ describe('Report Generator', () => {
 
             vi.mocked(client.createReasoningClient).mockReturnValue(mockClient as any);
 
-            await generateReportWithTools(configWithoutTools, messages, toolContext);
+            await generateReport(configWithoutTools as any, messages, toolContext);
 
             // Verify default tools were requested
             expect(mockExecuteWithTools).toHaveBeenCalledWith(
@@ -296,7 +195,7 @@ describe('Report Generator', () => {
 
             vi.mocked(client.createReasoningClient).mockReturnValue(mockClient as any);
 
-            await generateReportWithTools(configWithoutMaxIterations, messages, toolContext);
+            await generateReport(configWithoutMaxIterations as any, messages, toolContext);
 
             expect(mockExecuteWithTools).toHaveBeenCalledWith(
                 messages,
@@ -322,7 +221,7 @@ describe('Report Generator', () => {
 
             vi.mocked(client.createReasoningClient).mockReturnValue(mockClient as any);
 
-            await generateReportWithTools(analysisConfig, messages, toolContext);
+            await generateReport(analysisConfig, messages, toolContext);
 
             // Get the onToolCall callback
             const call = mockExecuteWithTools.mock.calls[0];
@@ -355,7 +254,7 @@ describe('Report Generator', () => {
             vi.mocked(client.createReasoningClient).mockReturnValue(mockClient as any);
 
             await expect(
-                generateReportWithTools(configWithInvalidTools, messages, toolContext)
+                generateReport(configWithInvalidTools as any, messages, toolContext)
             ).rejects.toThrow('No tools available for reasoning mode');
         });
 
@@ -370,7 +269,7 @@ describe('Report Generator', () => {
             vi.mocked(client.createReasoningClient).mockReturnValue(mockClient as any);
 
             await expect(
-                generateReportWithTools(analysisConfig, messages, toolContext)
+                generateReport(analysisConfig, messages, toolContext)
             ).rejects.toThrow('Tool execution failed');
         });
     });

@@ -2,7 +2,7 @@ import * as Analysis from "./analysis/inputs";
 import { JobConfig, KronologiConfig } from "./types";
 import { AnalysisConfig } from "./types";
 import { Message } from "./reasoning/types";
-import { generateReportSimple, generateReportWithTools } from "./reasoning/reportGenerator";
+import { generateReport } from "./reasoning/reportGenerator";
 import { ToolContext } from "./reasoning/tools/types";
 import * as Storage from "./util/storage";
 import { getLogger } from "./logging";
@@ -35,23 +35,15 @@ export const runModel = async (
         content: m.content,
     }));
 
-    // Check if reasoning mode is enabled
-    const useReasoning = analysisConfig.reasoning?.enabled ?? false;
+    // Always use reasoning mode with tools
+    const toolContext: ToolContext = {
+        storage: Storage.create({ log: getLogger().info }),
+        config: kronologiConfig,
+        job: jobConfig,
+        logger: getLogger(),
+    };
 
-    let result;
-    if (useReasoning) {
-        // Create tool context
-        const toolContext: ToolContext = {
-            storage: Storage.create({ log: getLogger().info }),
-            config: kronologiConfig,
-            job: jobConfig,
-            logger: getLogger(),
-        };
-
-        result = await generateReportWithTools(analysisConfig, messages, toolContext);
-    } else {
-        result = await generateReportSimple(analysisConfig, messages);
-    }
+    const result = await generateReport(analysisConfig, messages, toolContext);
 
     return {
         aiSummary: result.content,

@@ -21,9 +21,11 @@ vi.mock('../src/analysis/inputs', () => ({
 }));
 
 // Mock the reasoning client
+const mockExecuteWithTools = vi.fn();
 vi.mock('../src/reasoning/client', () => ({
     createReasoningClient: vi.fn().mockReturnValue({
         complete: mockReasoningClientComplete,
+        executeWithTools: mockExecuteWithTools,
     }),
 }));
 
@@ -36,6 +38,9 @@ describe('runModel', () => {
         model: 'gpt-4',
         temperature: 0.7,
         maxCompletionTokens: 500,
+        reasoning: {
+            provider: 'openai',
+        },
         // Add other required fields if any
     };
     // @ts-ignore
@@ -74,12 +79,14 @@ describe('runModel', () => {
             },
             model: 'gpt-4',
             stopReason: 'end_turn' as const,
+            toolCalls: [],
+            iterations: 1,
         };
 
         // @ts-ignore
         mockCreateInputs.mockResolvedValue(mockMonthlySummary);
         // @ts-ignore
-        mockReasoningClientComplete.mockResolvedValue(mockReasoningResponse);
+        mockExecuteWithTools.mockResolvedValue(mockReasoningResponse);
 
         const result = await runModel(analysisConfig, mindshahnConfig, jobConfig);
 
@@ -94,8 +101,10 @@ describe('runModel', () => {
             mindshahnConfig,
             jobConfig
         );
-        expect(mockReasoningClientComplete).toHaveBeenCalledWith(
-            mockMonthlySummary.request.messages
+        expect(mockExecuteWithTools).toHaveBeenCalledWith(
+            mockMonthlySummary.request.messages,
+            expect.any(Array),
+            expect.any(Object)
         );
         expect(result.aiSummary).toBe('AI generated summary');
         expect(result.aiUsage).toEqual({
@@ -110,7 +119,11 @@ describe('runModel', () => {
             },
             model: 'gpt-4',
         });
-        expect(result.monthlySummary).toEqual(mockMonthlySummary);
+        expect(result.monthlySummary).toEqual({
+            ...mockMonthlySummary,
+            toolCalls: [],
+            iterations: 1,
+        });
         // @ts-ignore
         expect(mockGetLogger().info).not.toHaveBeenCalledWith(expect.stringContaining('Skipping generation'));
     });
@@ -132,16 +145,20 @@ describe('runModel', () => {
             },
             model: 'gpt-4',
             stopReason: 'end_turn' as const,
+            toolCalls: [],
+            iterations: 1,
         };
 
         // @ts-ignore
-        mockReasoningClientComplete.mockResolvedValue(mockReasoningResponse);
+        mockExecuteWithTools.mockResolvedValue(mockReasoningResponse);
 
         const result = await runModel(analysisConfig, mindshahnConfig, jobConfig, existingMonthlySummary);
 
         expect(mockCreateInputs).not.toHaveBeenCalled();
-        expect(mockReasoningClientComplete).toHaveBeenCalledWith(
-            existingMonthlySummary.request.messages
+        expect(mockExecuteWithTools).toHaveBeenCalledWith(
+            existingMonthlySummary.request.messages,
+            expect.any(Array),
+            expect.any(Object)
         );
         expect(result.aiSummary).toBe('AI summary from existing');
         expect(result.aiUsage).toEqual({
@@ -156,7 +173,11 @@ describe('runModel', () => {
             },
             model: 'gpt-4',
         });
-        expect(result.monthlySummary).toEqual(existingMonthlySummary);
+        expect(result.monthlySummary).toEqual({
+            ...existingMonthlySummary,
+            toolCalls: [],
+            iterations: 1,
+        });
         // @ts-ignore
         expect(mockGetLogger().info).not.toHaveBeenCalledWith(expect.stringContaining('Skipping generation'));
     });
