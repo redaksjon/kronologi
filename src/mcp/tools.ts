@@ -18,7 +18,7 @@ import { glob } from 'glob';
 export const tools = [
     {
         name: 'generate_report',
-        description: 'Generate a Kronologi report for a specific job, year, and month',
+        description: 'Generate a Kronologi report using AI reasoning mode with tools. The AI explores content dynamically using tools (read_file, list_files, search_files) to gather relevant information. More efficient than traditional methods as the AI only reads content it deems relevant.',
         inputSchema: {
             type: 'object',
             properties: {
