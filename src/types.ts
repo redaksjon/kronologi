@@ -78,8 +78,7 @@ export interface OutputConfig {
 }
 
 export interface ReasoningConfigType {
-    enabled: boolean;
-    provider?: 'anthropic' | 'openai';
+    provider: 'anthropic' | 'openai';
     maxIterations?: number;
     tools?: string[];  // Tool names to enable
 }
@@ -97,7 +96,7 @@ export interface AnalysisConfig {
     temperature: number;
     maxCompletionTokens: number;
     model: string;
-    reasoning?: ReasoningConfigType;  // Optional reasoning config
+    reasoning: ReasoningConfigType;  // Required reasoning config
     context: {
         [key: string]: StaticContextConfig | HistoryContextConfig;
     };
@@ -128,4 +127,38 @@ export interface Parameters {
 
 export interface FileContents {
     [fileName: string]: string;
+}
+
+// ============================================================================
+// Tool-Based Content Source Types (Reasoning-Only Mode)
+// ============================================================================
+
+/**
+ * Configuration for a content source that AI can access via tools
+ */
+export interface ContentSourceConfig {
+    directory: string;
+    description: string;  // Describes what content is available for the AI
+    patterns?: string[];  // File patterns available
+    monthsAvailable?: number;  // How far back history goes
+    weeksAvailable?: number;  // How far back history goes (for week-based)
+}
+
+/**
+ * Content sources configuration for reasoning-only mode
+ * Describes what content is available and how to access it via tools
+ */
+export interface ContentSourcesConfig {
+    activity?: ContentSourceConfig;
+    history?: ContentSourceConfig;
+    summaries?: ContentSourceConfig;
+    context?: ContentSourceConfig;
+}
+
+/**
+ * Extended AnalysisConfig with content sources for reasoning-only mode
+ * TODO: In future phases, replace old content/context with contentSources
+ */
+export interface AnalysisConfigWithSources extends AnalysisConfig {
+    contentSources?: ContentSourcesConfig;  // New tool-based content sources
 } 

@@ -21,6 +21,9 @@ describe('Config Loader', () => {
                 model: 'gpt-4',
                 temperature: 0.7,
                 maxCompletionTokens: 4000,
+                reasoning: {
+                    provider: 'openai',
+                },
             };
 
             const mockStorage = {
@@ -61,6 +64,9 @@ describe('Config Loader', () => {
         it('should apply default values', async () => {
             const mockConfig = {
                 model: 'gpt-4',
+                reasoning: {
+                    provider: 'anthropic',
+                },
                 // Missing optional fields that should get defaults
             };
 
@@ -80,6 +86,9 @@ describe('Config Loader', () => {
         it('should validate static context has directory', async () => {
             const mockConfig = {
                 model: 'gpt-4',
+                reasoning: {
+                    provider: 'openai',
+                },
                 context: {
                     myContext: {
                         type: 'static',
@@ -103,6 +112,9 @@ describe('Config Loader', () => {
         it('should validate history context has from property', async () => {
             const mockConfig = {
                 model: 'gpt-4',
+                reasoning: {
+                    provider: 'openai',
+                },
                 context: {
                     myHistory: {
                         type: 'history',
@@ -126,6 +138,9 @@ describe('Config Loader', () => {
         it('should auto-generate context name if not provided', async () => {
             const mockConfig = {
                 model: 'gpt-4',
+                reasoning: {
+                    provider: 'openai',
+                },
                 context: {
                     my_context: {
                         type: 'static',
@@ -149,6 +164,9 @@ describe('Config Loader', () => {
         it('should validate parameter references in history months', async () => {
             const mockConfig = {
                 model: 'gpt-4',
+                reasoning: {
+                    provider: 'openai',
+                },
                 parameters: {
                     historyMonths: {
                         type: 'number',
@@ -179,6 +197,9 @@ describe('Config Loader', () => {
         it('should throw error for invalid parameter reference', async () => {
             const mockConfig = {
                 model: 'gpt-4',
+                reasoning: {
+                    provider: 'openai',
+                },
                 context: {
                     history: {
                         type: 'history',
@@ -203,6 +224,9 @@ describe('Config Loader', () => {
         it('should throw error for wrong parameter type', async () => {
             const mockConfig = {
                 model: 'gpt-4',
+                reasoning: {
+                    provider: 'openai',
+                },
                 parameters: {
                     historyMonths: {
                         type: 'string', // Wrong type, should be number
@@ -260,6 +284,9 @@ describe('Config Loader', () => {
         it('should validate invalid context type', async () => {
             const mockConfig = {
                 model: 'gpt-4',
+                reasoning: {
+                    provider: 'openai',
+                },
                 context: {
                     invalid: {
                         type: 'unknown_type',
@@ -282,6 +309,9 @@ describe('Config Loader', () => {
         it('should auto-generate content name if not provided', async () => {
             const mockConfig = {
                 model: 'gpt-4',
+                reasoning: {
+                    provider: 'openai',
+                },
                 content: {
                     my_content: {
                         from: 'activity',
@@ -305,6 +335,9 @@ describe('Config Loader', () => {
         it('should apply default pattern for content', async () => {
             const mockConfig = {
                 model: 'gpt-4',
+                reasoning: {
+                    provider: 'openai',
+                },
                 content: {
                     myContent: {
                         from: 'activity',
