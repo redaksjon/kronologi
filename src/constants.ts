@@ -44,6 +44,7 @@ export const JOB_REQUIRED_FILES = [JOB_CONFIG_FILE, JOB_PERSONA_PROMPT_FILE, JOB
 export const DEFAULT_JOB_DIR = `./.${PROGRAM_NAME}/jobs`;
 
 export const DEFAULT_CONTEXT_DIR = `context`;
+export const DEFAULT_CONTEXT_NAMESPACE = 'redaksjon';
 export const DEFAULT_ACTIVITY_DIR = `activity`;
 export const DEFAULT_SUMMARY_DIR = `summary`;
 

@@ -17,12 +17,9 @@ export const kronologiContextConfig: {
 
 /**
  * Discovery options for kronologi.
- * Looks for context in multiple locations:
- * 1. .protokoll/context/ (shared with protokoll)
- * 2. .kronologi/context/ (kronologi-specific)
- * 3. context/ (generic)
+ * Uses the new 'context' directory structure with redaksjon namespace.
  */
 export const kronologiDiscoveryOptions = {
-    contextDirNames: ['.protokoll', '.kronologi', 'context'],
+    contextDirName: 'context',
     maxLevels: 10,
 };
