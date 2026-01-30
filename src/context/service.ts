@@ -1,7 +1,7 @@
 import {
     discoverOvercontext,
     OvercontextAPI,
-} from '@theunwalked/overcontext';
+} from '@utilarium/overcontext';
 import {
     redaksjonSchemas,
     redaksjonPluralNames,
