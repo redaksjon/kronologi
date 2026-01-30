@@ -1,4 +1,4 @@
-import * as CardiganTime from '@theunwalked/cardigantime';
+import * as CardiganTime from '@utilarium/cardigantime';
 import { Command } from "commander";
 import { ALLOWED_MODELS, DEFAULT_ACTIVITY_DIR, DEFAULT_CONFIG_DIR, DEFAULT_CONTEXT_DIR, DEFAULT_DEBUG, DEFAULT_DRY_RUN, DEFAULT_HISTORY_MONTHS, DEFAULT_HISTORY_WEEKS, DEFAULT_MODEL, DEFAULT_REPLACE, DEFAULT_SUMMARY_DIR, DEFAULT_SUMMARY_MONTHS, DEFAULT_SUMMARY_WEEKS, DEFAULT_VERBOSE, PROGRAM_NAME, KRONOLOGI_DEFAULTS, JOB_DEFAULTS, VERSION } from "./constants";
 import { ArgumentError } from "./error/ArgumentError";
@@ -6,7 +6,7 @@ import { getLogger } from "./logging";
 import { Args, JobConfig, KronologiConfig } from "./types";
 import * as Dates from "./util/dates";
 import * as Storage from "./util/storage";
-import * as DreadCabinet from "@theunwalked/dreadcabinet";
+import * as DreadCabinet from "@utilarium/dreadcabinet";
 
 export const configure = async (dreadcabinet: DreadCabinet.DreadCabinet, cardigantime: CardiganTime.Cardigantime<any>): Promise<[KronologiConfig, JobConfig]> => {
     const logger = getLogger();

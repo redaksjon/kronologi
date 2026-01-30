@@ -1,6 +1,6 @@
 import { z } from "zod";
-import * as Cardigantime from '@theunwalked/cardigantime';
-import * as Dreadcabinet from '@theunwalked/dreadcabinet';
+import * as Cardigantime from '@utilarium/cardigantime';
+import * as Dreadcabinet from '@utilarium/dreadcabinet';
 import { Request } from '@riotprompt/riotprompt';
 
 export interface Args extends Dreadcabinet.Args, Cardigantime.Args {

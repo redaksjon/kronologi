@@ -1,6 +1,6 @@
 {
   "name": "@redaksjon/kronologi",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Intelligent monthly summary generation from activity and context",
   "main": "dist/main.js",
   "type": "module",
@@ -45,11 +45,11 @@
     "@anthropic-ai/sdk": "^0.71.2",
     "@google/generative-ai": "^0.24.1",
     "@modelcontextprotocol/sdk": "^1.25.3",
-    "@redaksjon/context": "^0.0.3",
+    "@redaksjon/context": "^0.0.4",
     "@riotprompt/riotprompt": "^0.0.21",
-    "@theunwalked/cardigantime": "^0.0.23",
-    "@theunwalked/dreadcabinet": "^0.0.15",
-    "@theunwalked/overcontext": "^0.0.3",
+    "@utilarium/cardigantime": "^0.0.24",
+    "@utilarium/dreadcabinet": "^0.0.16",
+    "@utilarium/overcontext": "^0.0.4",
     "commander": "^14.0.2",
     "dayjs": "^1.11.19",
     "dotenv": "^17.2.3",
@@ -59,7 +59,7 @@
     "moment-timezone": "^0.6.0",
     "openai": "^6.15.0",
     "winston": "^3.18.3",
-    "zod": "^4.0.2"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",

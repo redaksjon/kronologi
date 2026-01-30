@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import * as Cardigantime from '@theunwalked/cardigantime';
+import * as Cardigantime from '@utilarium/cardigantime';
 import 'dotenv/config';
 import { writeOutputFile } from './output';
 import { join } from 'path';
@@ -10,7 +10,7 @@ import * as Arguments from './arguments';
 import { DEFAULT_CONFIG_DIR, DEFAULT_TIMEZONE, PROGRAM_NAME, VERSION } from './constants';
 import { getLogger, setLogLevel } from './logging';
 import * as Storage from './util/storage';
-import * as Dreadcabinet from '@theunwalked/dreadcabinet';
+import * as Dreadcabinet from '@utilarium/dreadcabinet';
 
 export async function main() {
 

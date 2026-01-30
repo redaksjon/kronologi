@@ -1,7 +1,7 @@
 import {
     discoverOvercontext,
     OvercontextAPI,
-} from '@theunwalked/overcontext';
+} from '@utilarium/overcontext';
 import {
     redaksjonSchemas,
     redaksjonPluralNames,
@@ -14,32 +14,18 @@ let contextInstance: KronologiContext | undefined;
 
 /**
  * Initialize context for kronologi.
- * Discovers context from .protokoll and .kronologi directories.
+ * Discovers context from the new 'context/redaksjon/' directory structure.
+ * The 'redaksjon' namespace is automatically detected from the directory structure.
  */
 export const initializeContext = async (
     startDir?: string
 ): Promise<KronologiContext | undefined> => {
-    // Try .protokoll first (most common case - sharing with protokoll)
     try {
         contextInstance = await discoverOvercontext({
             schemas: redaksjonSchemas,
             pluralNames: redaksjonPluralNames,
-            contextDirName: '.protokoll',
             startDir,
-            maxLevels: kronologiDiscoveryOptions.maxLevels,
-        });
-        return contextInstance;
-    } catch {
-        // Fall back to .kronologi
-    }
-  
-    try {
-        contextInstance = await discoverOvercontext({
-            schemas: redaksjonSchemas,
-            pluralNames: redaksjonPluralNames,
-            contextDirName: '.kronologi',
-            startDir,
-            maxLevels: kronologiDiscoveryOptions.maxLevels,
+            ...kronologiDiscoveryOptions,
         });
         return contextInstance;
     } catch {
