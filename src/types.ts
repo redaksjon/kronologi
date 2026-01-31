@@ -1,7 +1,7 @@
 import { z } from "zod";
 import * as Cardigantime from '@utilarium/cardigantime';
 import * as Dreadcabinet from '@utilarium/dreadcabinet';
-import { Request } from '@riotprompt/riotprompt';
+import { Request } from '@kjerneverk/riotprompt';
 
 export interface Args extends Dreadcabinet.Args, Cardigantime.Args {
     dryRun?: boolean;

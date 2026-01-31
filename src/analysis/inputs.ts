@@ -1,4 +1,4 @@
-import { Content, Context, createPrompt, Formatter, Instruction, Model, Prompt, Request, Section, createSection } from '@riotprompt/riotprompt';
+import { Content, Context, createPrompt, Formatter, Instruction, Model, Prompt, Request, Section, createSection } from '@kjerneverk/riotprompt';
 import { join } from 'path';
 import { JobConfig, KronologiConfig, AnalysisConfigWithSources } from '../types';
 import { checkDirectory } from './file';
