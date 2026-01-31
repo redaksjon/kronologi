@@ -1,4 +1,4 @@
-import { Content, Context, createSection, Instruction, Parser, Section } from '@riotprompt/riotprompt';
+import { Content, Context, createSection, Instruction, Parser, Section } from '@kjerneverk/riotprompt';
 import { join } from 'path';
 import { JOB_INSTRUCTIONS_PROMPT_FILE, JOB_PERSONA_PROMPT_FILE } from '../constants';
 import { getLogger } from '../logging';

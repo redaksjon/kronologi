@@ -1,4 +1,4 @@
-import { createSection, Section, Weighted } from '@riotprompt/riotprompt';
+import { createSection, Section, Weighted } from '@kjerneverk/riotprompt';
 import { Parameters } from '../types';
 
 /**
