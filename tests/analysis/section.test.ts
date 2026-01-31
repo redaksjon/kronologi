@@ -6,7 +6,7 @@ const mockCreateSection = vi.fn((title) => ({
     items: []
 }));
 
-vi.mock('@riotprompt/riotprompt', () => ({
+vi.mock('@kjerneverk/riotprompt', () => ({
     createSection: mockCreateSection,
 }));
 
