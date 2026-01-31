@@ -68,9 +68,9 @@ export default defineConfig({
         ssr: true,
         rollupOptions: {
             external: [
-                '@riotprompt/riotprompt', 
-                '@riotprompt/riotprompt/formatter', 
-                '@riotprompt/riotprompt/chat',
+                '@kjerneverk/riotprompt', 
+                '@kjerneverk/riotprompt/formatter', 
+                '@kjerneverk/riotprompt/chat',
                 '@anthropic-ai/sdk',
                 '@google/generative-ai',
                 '@modelcontextprotocol/sdk',
