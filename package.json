@@ -1,6 +1,6 @@
 {
   "name": "@redaksjon/kronologi",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Intelligent monthly summary generation from activity and context",
   "main": "dist/main.js",
   "type": "module",
@@ -45,7 +45,7 @@
     "@anthropic-ai/sdk": "^0.71.2",
     "@google/generative-ai": "^0.24.1",
     "@modelcontextprotocol/sdk": "^1.25.3",
-    "@redaksjon/context": "^0.0.4",
+    "@redaksjon/context": "^0.0.5",
     "@kjerneverk/riotprompt": "^1.0.6",
     "@utilarium/cardigantime": "^0.0.24",
     "@utilarium/dreadcabinet": "^0.0.16",
