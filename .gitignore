@@ -12,3 +12,5 @@ input/
 tsconfig.tsbuildinfo
 package-lock.json
 .kodrdriv*
+tsconfig.tsbuildinfo
+.DS_Store
