@@ -1,6 +1,6 @@
 {
   "name": "@redaksjon/kronologi",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Intelligent monthly summary generation from activity and context",
   "main": "dist/main.js",
   "type": "module",
@@ -57,7 +57,7 @@
     "js-yaml": "^4.1.1",
     "luxon": "^3.7.2",
     "moment-timezone": "^0.6.0",
-    "openai": "^6.15.0",
+    "openai": "^6.22.0",
     "winston": "^3.18.3",
     "zod": "^4.3.6"
   },
