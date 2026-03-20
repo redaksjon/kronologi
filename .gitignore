@@ -10,7 +10,6 @@ input/
 .mindshahn/tsconfig.tsbuildinfo
 .kodrdriv*
 tsconfig.tsbuildinfo
-package-lock.json
 .kodrdriv*
 tsconfig.tsbuildinfo
 .DS_Store
